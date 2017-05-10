@@ -10,6 +10,7 @@
 
 namespace Topolis\Validator;
 
+use Symfony\Component\Yaml\Yaml;
 use Topolis\FunctionLibrary\Collection;
 use Topolis\Filter\Filter;
 use Exception;
@@ -23,20 +24,28 @@ use Exception;
 
 class Validator {
 
-    protected $identity = null;
-    protected $config = array();
+    protected $schema = [];
 
     /**
-     * @param string $identity          name of object and yml file (excluding extensions)
+     * @param string $schemafile             file path to yaml schema file
+     * @param string|boolean $cachefolder    folder path to cache folder
      */
-    public function __construct($identity){
-        $this->identity = $identity;
-        $config = $this->getCached();
-        if(!$config){
-            $config = $this->getYaml();
-            $this->setCached($config);
+    public function __construct($schemafile, $cachefolder = false){
+
+        $cachefile = $cachefolder ? $cachefolder."/".pathinfo($schemafile, PATHINFO_BASENAME)."schema-cache" : false;
+
+        if($cachefile){
+            $this->schema = $this->getCached($cachefile, $schemafile);
         }
-        $this->config = $config;
+
+        if(!$this->schema){
+            $this->schema = $this->getYaml($schemafile);
+
+            if($cachefile)
+                $this->setCached($cachefile, $this->schema);
+        }
+
+        $this->identity = Collection::get($this->schema, "name", pathinfo($schemafile, PATHINFO_BASENAME));
     }
 
     // ------------------------------------------------------------------------------------------------------
@@ -51,7 +60,7 @@ class Validator {
     public function validate(array $values, $quiet = false, &$errors = array()){
         $errors = array();
 
-        $valid = $this->validateArray($values, $this->config["definitions"], $errors, $quiet);
+        $valid = $this->validateArray($values, $this->schema["definitions"], $errors);
 
         if($errors){
             if(!$quiet)
@@ -86,7 +95,12 @@ class Validator {
             }
             // Field contains a single value and no sub fields
             elseif(!isset($definition["definitions"]) && !is_array($value)){
+                $strict = Collection::get($definition, "strict", true);
+                $original = $value;
                 $value = Filter::filter($value, $definition["filter"], $definition["filter-options"]);
+
+                if($strict && $value != $original)
+                    $errors[$key] = $value;
             }
 
             // Empty ?
@@ -107,52 +121,33 @@ class Validator {
 
     // ------------------------------------------------------------------------------------------------------
 
-    protected function getCachePath(){
-        return __DIR__."/../../cache/".APP_INSTANCE."/".$this->identity.".cache";
-    }
+    protected function getCached($cachefile, $schemafile){
 
-    protected function getConfigPath(){
-        $default = __DIR__."/../../instances/default/config/".$this->identity.".yml";
-        $instance = __DIR__."/../../instances/".APP_INSTANCE."/config/".$this->identity.".yml";
-
-        if(file_exists($instance))
-            return $instance;
-
-        return $default;
-    }
-
-    protected function getCached(){
-        $cache_file  = $this->getCachePath();
-        $config_file = $this->getConfigPath();
-
-        $cacheAge = @filemtime($cache_file);
-        $configAge = @filemtime($config_file);
+        $cacheAge = @filemtime($cachefile);
+        $configAge = @filemtime($schemafile);
 
         // No cache present
         if($cacheAge === false)
             return false;
         // Cache to old
         if($cacheAge < $configAge){
-            unlink($cache_file);
+            unlink($cachefile);
             return false;
         }
 
         // Cache is ok
-        $config = file_get_contents($cache_file);
+        $config = file_get_contents($cachefile);
         return unserialize($config);
     }
 
-    protected function setCached($config){
-        $cache_file  = $this->getCachePath();
-        $config = serialize($config);
-        file_put_contents($cache_file, $config);
+    protected function setCached($cachefile, $schema){
+        $schema = serialize($schema);
+        file_put_contents($cachefile, $schema);
     }
 
-    protected function getYaml(){
-        $config_file = $this->getConfigPath();
-        $parser = new sfYamlParser();
-        $content = file_get_contents($config_file);
-        $parsed = $parser->parse($content);
+    protected function getYaml($schemafile){
+        $content = file_get_contents($schemafile);
+        $parsed = Yaml::parse($content);
 
         $definitions = Collection::get($parsed, "definitions", array());
         $parsed["definitions"] = $this->parseDefinitions($definitions);
