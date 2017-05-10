@@ -17,9 +17,8 @@
             "role": "Developer"
         }
     ],
-    "minimum-stability": "stable",
     "require": {
-        "topolis/collection": "^2.0",
+        "topolis/function-library": "^2.0",
         "topolis/filter": "^2.0",
         "symfony/yaml": "*"
     },
