@@ -32,7 +32,7 @@ class Validator {
      */
     public function __construct($schemafile, $cachefolder = false){
 
-        $cachefile = $cachefolder ? $cachefolder."/".pathinfo($schemafile, PATHINFO_BASENAME)."schema-cache" : false;
+        $cachefile = $cachefolder ? $cachefolder."/".pathinfo($schemafile, PATHINFO_FILENAME)."schema-cache" : false;
 
         if($cachefile){
             $this->schema = $this->getCached($cachefile, $schemafile);
@@ -45,7 +45,7 @@ class Validator {
                 $this->setCached($cachefile, $this->schema);
         }
 
-        $this->identity = Collection::get($this->schema, "name", pathinfo($schemafile, PATHINFO_BASENAME));
+        $this->identity = Collection::get($this->schema, "name", pathinfo($schemafile, PATHINFO_FILENAME));
     }
 
     // ------------------------------------------------------------------------------------------------------
