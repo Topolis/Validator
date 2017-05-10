@@ -1,0 +1,31 @@
+{
+    "name": "topolis/validator",
+    "description": "yaml based schema validation for multidimensional arrays",
+    "type": "library",
+    "keywords": [
+        "library",
+        "topolis",
+        "schema",
+        "yaml",
+        "validation",
+        "security"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "ToBe998",
+            "role": "Developer"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "topolis/collection": "^2.0",
+        "topolis/filter": "^2.0",
+        "symfony/yaml": "*"
+    },
+    "autoload" : {
+        "psr-4" : {
+           "Topolis\\Validator\\" : "src"
+        }
+    }
+}
