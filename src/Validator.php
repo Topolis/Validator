@@ -16,8 +16,8 @@ use Topolis\Filter\Filter;
 use Exception;
 
 /**
- * AppException
- * Base class for all exceptions. Defines all error codes and can be converted to XML
+ * Validator
+ * Manager class for schema validations
  * @package Topolis
  * @subpackage Validator
  */
@@ -26,13 +26,19 @@ class Validator {
 
     protected $schema = [];
 
+    protected $definitionParser = null;
+    protected $valueProcessor = null;
+
     /**
      * @param string $schemafile             file path to yaml schema file
      * @param string|boolean $cachefolder    folder path to cache folder
      */
     public function __construct($schemafile, $cachefolder = false){
 
-        $cachefile = $cachefolder ? $cachefolder."/".pathinfo($schemafile, PATHINFO_FILENAME)."schema-cache" : false;
+        $this->definitionParser = new DefinitionParser();
+        $this->valueProcessor = new ValueProcessor();
+
+        $cachefile = $cachefolder ? $cachefolder."/".pathinfo($schemafile, PATHINFO_FILENAME).".schema-cache" : false;
 
         if($cachefile){
             $this->schema = $this->getCached($cachefile, $schemafile);
@@ -46,6 +52,8 @@ class Validator {
         }
 
         $this->identity = Collection::get($this->schema, "name", pathinfo($schemafile, PATHINFO_FILENAME));
+
+        $this->valueProcessor->setDefinitions($this->schema["definitions"]);
     }
 
     // ------------------------------------------------------------------------------------------------------
@@ -58,62 +66,14 @@ class Validator {
      * @throws Exception
      */
     public function validate(array $values, $quiet = false, &$errors = array()){
-        $errors = array();
-
-        $valid = $this->validateArray($values, $this->schema["definitions"], $errors);
+        $valid = $this->valueProcessor->validate($values);
+        $errors = $this->valueProcessor->getErrors();
 
         if($errors){
             if(!$quiet)
                 throw new Exception("Values for ".$this->identity." object invalid");
             else
                 return false;
-        }
-
-        return $valid;
-    }
-
-    protected function validateArray(array $values, array $definitions, array &$errors){
-        $valid = array();
-
-        foreach($definitions as $key => $definition){
-            $value = Collection::get($values, $key, $definition["default"]);
-
-            // Field contains definitions for multiple sub fields directly below this item
-            if(isset($definition["definitions"]) && is_array($value) && $definition["type"] == "multiple"){
-                $children = array();
-                foreach($value as $idx => $child) {
-                    $idx = Filter::filter($idx, $definition["filter"], $definition["filter-options"]);
-                    if($idx !== null && is_array($child))
-                        /** @noinspection PhpIllegalArrayKeyTypeInspection */
-                        $children[$idx] = $this->validateArray($child, $definition["definitions"], $errors);
-                }
-                $value = $children;
-            }
-            // Field contains definitions for multiple sub items with fields each
-            if(isset($definition["definitions"]) && is_array($value) && $definition["type"] == "single"){
-                $value = $this->validateArray($value, $definition["definitions"], $errors);
-            }
-            // Field contains a single value and no sub fields
-            elseif(!isset($definition["definitions"]) && !is_array($value)){
-                $strict = Collection::get($definition, "strict", true);
-                $original = $value;
-                $value = Filter::filter($value, $definition["filter"], $definition["filter-options"]);
-
-                if($strict && $value != $original)
-                    $errors[$key] = $value;
-            }
-
-            // Empty ?
-            if($value === null || $value === "") {
-                if ($definition["required"])
-                    $errors[$key] = $value;
-
-                if ($definition["keep-empty"])
-                    Collection::set($valid, $key, null);
-            }
-            else {
-                Collection::set($valid, $key, $value);
-            }
         }
 
         return $valid;
@@ -150,24 +110,8 @@ class Validator {
         $parsed = Yaml::parse($content);
 
         $definitions = Collection::get($parsed, "definitions", array());
-        $parsed["definitions"] = $this->parseDefinitions($definitions);
+        $parsed["definitions"] = $this->definitionParser->parse($definitions);
 
         return $parsed;
-    }
-
-    protected function parseDefinitions($definitions){
-        foreach($definitions as $key => &$definition){
-            if(isset($definition["definitions"])) {
-                $definition["type"]           = Collection::get($definition, "type", "single");
-                $definition["definitions"]    = $this->parseDefinitions($definition["definitions"]);
-            }
-            $definition["filter"]             = Collection::get($definition, "filter", "Strip");
-            $definition["filter-options"]     = Collection::get($definition, "filter-options", array());
-            $definition["default"]            = Collection::get($definition, "default", null);
-            $definition["required"]           = Collection::get($definition, "required", false);
-            $definition["keep-empty"]         = Collection::get($definition, "keep-empty", true);
-        }
-
-        return $definitions;
     }
 }
