@@ -19,6 +19,9 @@ namespace Topolis\Validator;
 
 class DefinitionParser{
 
+    /* @var ConditionParser $conditionParser */
+    protected $conditionParser = null;
+
     /* @var array $defaultDefinition       default values for field definitions */
     protected static $defaultDefinition = [
         "filter" => "passthrough",
@@ -30,7 +33,8 @@ class DefinitionParser{
 
     /* @var array $defaultDefinition       default values for field definitions with sub fields */
     protected static $defaultSubDefinition = [
-        "type" => "single"
+        "type" => "single",
+        "conditionals" => []
     ];
 
     /* @var array $defaultRemoves       default values to remove if removal is set */
@@ -39,25 +43,52 @@ class DefinitionParser{
         ""
     ];
 
+    public function __construct() {
+    }
+
     public function parse(array $definitions) {
 
         foreach($definitions as $key => &$definition){
 
             $definition = $definition + self::$defaultDefinition;
 
-            if(isset($definition["definitions"])) {
-                $definition = $definition + self::$defaultSubDefinition;
-                $definition["definitions"]    = $this->parse($definition["definitions"]);
-            }
-
             if( $definition["remove"] === true )
                 $definition["remove"] = [];
 
             if( is_array($definition["remove"]) )
                 $definition["remove"] = array_merge($definition["remove"], self::$defaultRemoves );
+
+            $this->parseDefinitions($definition);
+            $this->parseConditionals($definition);
         }
 
         return $definitions;
+    }
+
+    protected function parseDefinitions(&$definition){
+
+        if(!isset($definition["definitions"]))
+            return;
+
+        $definition = $definition + self::$defaultSubDefinition;
+        $definition["definitions"] = $this->parse($definition["definitions"]);
+    }
+
+    protected function parseConditionals(&$definition){
+
+        if(!isset($definition["conditionals"]))
+            return;
+
+        foreach($definition["conditionals"] as $conditional){
+
+            $apply = $this->conditionParser->parse($conditional["condition"], $data);
+
+            $replacements =& $conditional;
+            unset($replacements["condition"]);
+
+            if($apply)
+                $definition = $replacements + $definition;
+        }
     }
 
 }

@@ -125,6 +125,7 @@ class ValueProcessor {
      * @param $value
      * @param array $definition
      * @return mixed
+     * @throws ValidatorException
      */
     protected function processValue($value, array $definition){
         $strict = Collection::get($definition, "strict", true);
