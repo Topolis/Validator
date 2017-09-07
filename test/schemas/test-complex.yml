@@ -1,0 +1,14 @@
+name: editor
+
+definitions:
+    A1:
+        filter: Plain
+    A2:
+        filter: Plain
+        required: true
+    A3:
+        definitions:
+            B1:
+                filter: Plain
+                required: true
+

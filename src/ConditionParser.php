@@ -32,7 +32,7 @@ class ConditionParser {
     const LESS      = '<';
     const GREATER   = '>';
     const LESSEQ    = '<=';
-    const GREATEREQ = '=>';
+    const GREATEREQ = '>=';
     const EQUALS    = '==';
     const NOT       = '!=';
     const IN        = 'in';
@@ -52,17 +52,41 @@ class ConditionParser {
         if(!is_string($condition))
             throw new Exception("Invalid condition found - Not a string");
 
-        $parts = str_getcsv($condition, ' ', '"', '\\');
+        $match = preg_match('/^([a-z.\-\_]+) (<|>|==|<=|>=|!=|in|notin) (.+)$/i', $condition, $matches);
+        if(!$match)
+            throw new Exception("Invalid condition found");
 
-        if(count($parts) != 3)
-            throw new Exception("Invalid condition found - Not three elements");
+        $key = $matches[1];
+        $operator = $matches[2];
+        $value = $matches[3];
 
-        list($key, $operator, $value) = $parts;
+        $value = $this->parseValue($value);
 
         $data = $this->getData($key, $data);
         $result = $this->evaluate($data, $operator, $value);
 
         return $result;
+    }
+
+    protected function parseValue($value){
+
+        // value is a boolean
+        if($value == "true")
+            return true;
+        if($value == "false")
+            return false;
+
+        // value is an array
+        if(preg_match('/^\(.*\)$/', $value)) {
+            $value = explode(",", trim($value, "()"));
+            array_walk($value, function(&$item){
+                $item = trim($item, ' "\'');
+            });
+            return $value;
+        }
+
+        // value is a plain string
+        return trim($value, ' "\'');
     }
 
     /**
@@ -72,7 +96,7 @@ class ConditionParser {
      * @return array|mixed|null
      */
     protected function getData($key, array $data){
-        return Collection::get($key, $data, null);
+        return Collection::get($data, $key, null);
     }
 
     /**
@@ -116,7 +140,7 @@ class ConditionParser {
                 return !in_array($data, $value);
 
             default:
-                throw new Exception("Invalid condition found - Bad operator");
+                throw new Exception("Invalid condition found - Bad operator (".$operator.")");
         }
 
     }

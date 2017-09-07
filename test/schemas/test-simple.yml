@@ -1,0 +1,13 @@
+name: editor
+
+definitions:
+    one:
+        filter: Plain
+        required: false
+    two:
+        filter: Plain
+        required: true
+    three:
+        filter: Plain
+        required: false
+        default: threeD

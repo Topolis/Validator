@@ -12,8 +12,9 @@ namespace Topolis\Validator;
 
 use Symfony\Component\Yaml\Yaml;
 use Topolis\FunctionLibrary\Collection;
-use Topolis\Filter\Filter;
 use Exception;
+use Topolis\Validator\Schema\Schema;
+use Topolis\Validator\Validators\SchemaValidator;
 
 /**
  * Validator
@@ -24,50 +25,51 @@ use Exception;
 
 class Validator {
 
-    protected $schema = [];
-
-    protected $definitionParser = null;
-    protected $valueProcessor = null;
+    protected $identity;
+    protected $definition;
 
     /**
      * @param string $schemafile             file path to yaml schema file
      * @param string|boolean $cachefolder    folder path to cache folder
      */
-    public function __construct($schemafile, $cachefolder = false){
+    public function __construct($definitionfile, $cachefolder = false){
 
-        $this->definitionParser = new DefinitionParser();
-        $this->valueProcessor = new ValueProcessor();
+        $definition = null;
 
-        $cachefile = $cachefolder ? $cachefolder."/".pathinfo($schemafile, PATHINFO_FILENAME).".schema-cache" : false;
+        $cachefile = $cachefolder ? $cachefolder."/".pathinfo($definitionfile, PATHINFO_FILENAME).".definition-cache" : false;
 
         if($cachefile){
-            $this->schema = $this->getCached($cachefile, $schemafile);
+            $definition = $this->getCached($cachefile, $definitionfile);
         }
 
-        if(!$this->schema){
-            $this->schema = $this->getYaml($schemafile);
+        if(!$definition){
+            $definition = $this->getYaml($definitionfile);
 
             if($cachefile)
-                $this->setCached($cachefile, $this->schema);
+                $this->setCached($cachefile, $definition);
         }
 
-        $this->identity = Collection::get($this->schema, "name", pathinfo($schemafile, PATHINFO_FILENAME));
-
-        $this->valueProcessor->setDefinitions($this->schema["definitions"]);
+        $this->identity = pathinfo($definitionfile, PATHINFO_FILENAME);
+        $this->definition = $definition;
     }
 
     // ------------------------------------------------------------------------------------------------------
 
     /**
      * Validate $array of values according to field definitions
-     * @param array $values            values to validate
-     * @param bool $quiet              throw exception on error or just quietly return false
-     * @return array|bool              false (if $quiet and invalid values) or validated $array including defaults
+     * @param array $values values to validate
+     * @param bool $quiet throw exception on error or just quietly return false
+     * @param array $errors
+     * @return array|bool false (if $quiet and invalid values) or validated $array including defaults
      * @throws Exception
      */
     public function validate(array $values, $quiet = false, &$errors = array()){
-        $valid = $this->valueProcessor->validate($values);
-        $errors = $this->valueProcessor->getErrors();
+
+        $errorHandler = new StatusManager();
+        $validator = new SchemaValidator($this->definition, $errorHandler);
+
+        $valid = $validator->validate($values);
+        $errors = $errorHandler->getMessages();
 
         if($errors){
             if(!$quiet)
@@ -81,10 +83,10 @@ class Validator {
 
     // ------------------------------------------------------------------------------------------------------
 
-    protected function getCached($cachefile, $schemafile){
+    protected function getCached($cachefile, $definitionfile){
 
         $cacheAge = @filemtime($cachefile);
-        $configAge = @filemtime($schemafile);
+        $configAge = @filemtime($definitionfile);
 
         // No cache present
         if($cacheAge === false)
@@ -96,22 +98,21 @@ class Validator {
         }
 
         // Cache is ok
-        $config = file_get_contents($cachefile);
-        return unserialize($config);
+        $definition = file_get_contents($cachefile);
+        return unserialize($definition);
     }
 
-    protected function setCached($cachefile, $schema){
-        $schema = serialize($schema);
-        file_put_contents($cachefile, $schema);
+    protected function setCached($cachefile, $definition){
+        $definition = serialize($definition);
+        file_put_contents($cachefile, $definition);
     }
 
     protected function getYaml($schemafile){
         $content = file_get_contents($schemafile);
         $parsed = Yaml::parse($content);
 
-        $definitions = Collection::get($parsed, "definitions", array());
-        $parsed["definitions"] = $this->definitionParser->parse($definitions);
+        $definition = new Schema($parsed);
 
-        return $parsed;
+        return $definition;
     }
 }
