@@ -62,7 +62,8 @@ class StatusManager {
             "level" => $level,
             "message" => $message,
             "value" => $value,
-            "definition" => $definition
+            "definition" => $definition,
+            "path" => $this->path
         ];
 
         $this->status = $this->status == true ? $level : min($this->status, $level);
