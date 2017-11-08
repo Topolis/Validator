@@ -96,7 +96,7 @@ class SchemaValidator {
         $surpusKeys = array_keys(array_diff_key($values, $definition->getDefinitions()));
         if($surpusKeys){
             $this->statusManager->addMessage(
-                StatusManager::INVALID,
+                StatusManager::SANITIZED,
                 "Invalid - Additional keys present (".implode(",",$surpusKeys).")",
                 $values,
                 $definition
