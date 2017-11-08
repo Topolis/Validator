@@ -71,7 +71,7 @@ class Validator {
         $valid = $validator->validate($values);
         $errors = $errorHandler->getMessages();
 
-        if($errors){
+        if($errorHandler->getStatus() <= StatusManager::INVALID){
             if(!$quiet)
                 throw new Exception("Values for ".$this->identity." object invalid");
             else
