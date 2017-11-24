@@ -9,8 +9,8 @@
 namespace Topolis\Validator;
 
 
-use Topolis\Validator\Schema\Field;
-use Topolis\Validator\Schema\Schema;
+use Topolis\Validator\Schema\Value;
+use Topolis\Validator\Schema\Object;
 use Topolis\Validator\Validators\FieldValidator;
 use Topolis\Validator\Validators\SchemaValidator;
 
@@ -18,7 +18,7 @@ class SchemaValidatorTest extends \PHPUnit_Framework_TestCase {
 
     protected function assertValid($definition, $input, $expected, $data = []){
         $errorhandler = new StatusManager();
-        $definition = new Schema($definition);
+        $definition = new Object($definition);
         $validator = new SchemaValidator($definition, $errorhandler);
 
         $result = $validator->validate($input, $data);
@@ -34,7 +34,7 @@ class SchemaValidatorTest extends \PHPUnit_Framework_TestCase {
 
     protected function assertInvalid($definition, $input, $status, $data = []){
         $errorhandler = new StatusManager();
-        $definition = new Schema($definition);
+        $definition = new Object($definition);
         $validator = new SchemaValidator($definition, $errorhandler);
 
         $result = $validator->validate($input, $data);

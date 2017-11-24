@@ -13,7 +13,8 @@ namespace Topolis\Validator;
 use Symfony\Component\Yaml\Yaml;
 use Topolis\FunctionLibrary\Collection;
 use Exception;
-use Topolis\Validator\Schema\Schema;
+use Topolis\Validator\Schema\NodeFactory;
+use Topolis\Validator\Schema\Object;
 use Topolis\Validator\Validators\SchemaValidator;
 
 /**
@@ -44,6 +45,13 @@ class Validator {
 
         if(!$definition){
             $definition = $this->getYaml($definitionfile);
+
+            $factory = new NodeFactory();
+            $factory->registerClass( 'Topolis\Validator\Schema\Node\Listing' );
+            $factory->registerClass( 'Topolis\Validator\Schema\Node\Object' );
+            $factory->registerClass( 'Topolis\Validator\Schema\Node\Value' );
+
+            $definition = $factory->createNode($definition);
 
             if($cachefile)
                 $this->setCached($cachefile, $definition);
@@ -110,9 +118,6 @@ class Validator {
     protected function getYaml($schemafile){
         $content = file_get_contents($schemafile);
         $parsed = Yaml::parse($content);
-
-        $definition = new Schema($parsed);
-
-        return $definition;
+        return $parsed;
     }
 }

@@ -12,7 +12,7 @@ class Conditional {
 
     protected $condition;
 
-    /* @var \Topolis\Validator\Schema\Schema | \Topolis\Validator\Schema\Field $definition */
+    /* @var \Topolis\Validator\Schema\Object | \Topolis\Validator\Schema\Value $definition */
     protected $definition;
     protected $definitionType = false;
 

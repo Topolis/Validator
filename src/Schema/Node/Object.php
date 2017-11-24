@@ -1,22 +1,23 @@
 <?php
 
-namespace Topolis\Validator\Schema;
+namespace Topolis\Validator\Schema\Node;
 
-use Topolis\Validator\Traits\MagicGetSet;
+use Topolis\Validator\Schema\Conditional;
+use Topolis\Validator\Schema\INode;
 
-class Schema {
+class Object implements INode {
 
     public $name;
 
     protected $type;
 
-    /* @var Field[]|Schema[] $definitions */
+    /* @var Value[]|Object[] $definitions */
     protected $definitions = [];
 
     /* @var Conditional[] $conditionals */
     protected $conditionals = [];
 
-    /* @var Field $index */
+    /* @var Value $index */
     protected $index;
 
     protected $default;
@@ -34,6 +35,10 @@ class Schema {
      */
     public function __construct(array $data) {
         $this->import($data);
+    }
+
+    public static function detect($schema) {
+        return is_array($schema) and isset($schema["object"]["properties"]);
     }
 
     /**
@@ -61,7 +66,7 @@ class Schema {
                 "filter" => $data["filter"],
                 "options" => $data["options"]
             ];
-            $this->index = new Field($field);
+            $this->index = new Value($field);
         }
 
 
@@ -72,9 +77,9 @@ class Schema {
         foreach($data["definitions"] as $field => $definition){
 
             if(isset($definition["definitions"]))
-                $this->definitions[$field] = new Schema($definition);
+                $this->definitions[$field] = new Object($definition);
             else
-                $this->definitions[$field] = new Field($definition);
+                $this->definitions[$field] = new Value($definition);
         }
 
     }
@@ -115,14 +120,14 @@ class Schema {
     }
 
     /**
-     * @return Field|null
+     * @return Value|null
      */
     public function getIndex(){
         return $this->index ? $this->index : null;
     }
 
     /**
-     * @return Field[]|Schema[]
+     * @return Value[]|Object[]
      */
     public function getDefinitions(){
         return $this->definitions;
@@ -150,9 +155,9 @@ class Schema {
     }
 
     /**
-     * @param Schema $schema
+     * @param Object $schema
      */
-    public function merge(Schema $schema){
+    public function merge(Object $schema){
 
         $this->default  = $schema->getDefault()  ? $schema->getDefault()  : $this->default;
         $this->required = $schema->getRequired() ? $schema->getRequired() : $this->required;

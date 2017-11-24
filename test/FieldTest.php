@@ -15,7 +15,7 @@ class FieldTest extends \PHPUnit_Framework_TestCase {
     ];
 
     public function testImportExport() {
-        $field = new Field([
+        $field = new Value([
             "filter" => "SomeFilter",
             "options" => ["A1", "A2", "A3" => "Athree"],
             "default" => true,
@@ -37,72 +37,72 @@ class FieldTest extends \PHPUnit_Framework_TestCase {
 
     public function testGetFilter(){
         // Specified
-        $field = new Field(["filter" => "SomeFilter"] + self::$fieldMock);
+        $field = new Value(["filter" => "SomeFilter"] + self::$fieldMock);
         $this->assertEquals("SomeFilter", $field->getFilter());
 
         // Nothing specified
-        $field = new Field(self::$fieldMock);
+        $field = new Value(self::$fieldMock);
         $this->assertEquals("Passthrough", $field->getFilter());
     }
 
     public function testGetOptions(){
         // Specified
         $options = ["two", 6, "C" => "D"];
-        $field = new Field([ "options" => $options ] + self::$fieldMock);
+        $field = new Value([ "options" => $options ] + self::$fieldMock);
         $this->assertEquals($options, $field->getOptions());
 
         // Nothing specified
-        $field = new Field(self::$fieldMock);
+        $field = new Value(self::$fieldMock);
         $this->assertEquals([], $field->getOptions());
     }
 
     public function testGetDefault(){
         // Specified
-        $field = new Field([ "default" => "helloworld" ] + self::$fieldMock);
+        $field = new Value([ "default" => "helloworld" ] + self::$fieldMock);
         $this->assertEquals("helloworld", $field->getDefault());
 
         // Nothing specified
-        $field = new Field(self::$fieldMock);
+        $field = new Value(self::$fieldMock);
         $this->assertNull($field->getDefault());
     }
 
     public function testGetRequired(){
         // Specified
-        $field = new Field([ "required" => true ] + self::$fieldMock);
+        $field = new Value([ "required" => true ] + self::$fieldMock);
         $this->assertTrue($field->getRequired());
 
-        $field = new Field([ "required" => false ] + self::$fieldMock);
+        $field = new Value([ "required" => false ] + self::$fieldMock);
         $this->assertFalse($field->getRequired());
 
 
         // Nothing specified
-        $field = new Field(self::$fieldMock);
+        $field = new Value(self::$fieldMock);
         $this->assertFalse($field->getRequired());
     }
 
     public function testGetRemove(){
         // Specified
-        $field = new Field([ "remove" => true ] + self::$fieldMock);
+        $field = new Value([ "remove" => true ] + self::$fieldMock);
         $this->assertTrue($field->getRemove());
 
-        $field = new Field([ "remove" => false ] + self::$fieldMock);
+        $field = new Value([ "remove" => false ] + self::$fieldMock);
         $this->assertFalse($field->getRemove());
 
 
         // Nothing specified
-        $field = new Field(self::$fieldMock);
+        $field = new Value(self::$fieldMock);
         $this->assertFalse($field->getRemove());
     }
 
     public function testMerge(){
-        $fieldA = new Field([
+        $fieldA = new Value([
             "filter" => "AFilter",
             "options" => ["A1", "A2", "A3" => "Athree"],
             "default" => true,
             "required" => true
         ] + self::$fieldMock);
 
-        $fieldB = new Field([
+        $fieldB = new Value([
             "filter" => "BFilter",
             "options" => ["B1", "B2", "B3" => "Bthree"],
             "required" => false

@@ -5,17 +5,17 @@ namespace Topolis\Validator\Validators;
 use Topolis\Filter\Filter;
 use Topolis\Filter\IFilterType;
 use Topolis\Validator\StatusManager;
-use Topolis\Validator\Schema\Field;
+use Topolis\Validator\Schema\Value;
 use Topolis\Validator\ValidatorException;
 
 class FieldValidator {
 
-    /* @var \Topolis\Validator\Schema\Field $definition */
+    /* @var \Topolis\Validator\Schema\Value $definition */
     protected $definition;
 
     protected $statusHandler;
 
-    public function __construct(Field $definition, StatusManager $statusHandler) {
+    public function __construct(Value $definition, StatusManager $statusHandler) {
         $this->statusHandler = $statusHandler;
         $this->definition = $definition;
     }

@@ -33,7 +33,7 @@ class SchemaTest extends \PHPUnit_Framework_TestCase {
     ];
 
     public function testImport() {
-        $schema = new Schema(self::$schemaMock);
+        $schema = new Object(self::$schemaMock);
 
         $this->assertInstanceOf("Topolis\Validator\Schema\Schema", $schema);
     }
@@ -41,42 +41,42 @@ class SchemaTest extends \PHPUnit_Framework_TestCase {
     public function testGetType(){
 
         // Constants
-        $this->assertNotEmpty(Schema::TYPE_SINGLE);
-        $this->assertNotEmpty(Schema::TYPE_MULTIPLE);
-        $this->assertNotEmpty(Schema::TYPE_DEFAULT);
-        $this->assertNotEquals(Schema::TYPE_SINGLE,Schema::TYPE_MULTIPLE);
+        $this->assertNotEmpty(Object::TYPE_SINGLE);
+        $this->assertNotEmpty(Object::TYPE_MULTIPLE);
+        $this->assertNotEmpty(Object::TYPE_DEFAULT);
+        $this->assertNotEquals(Object::TYPE_SINGLE,Object::TYPE_MULTIPLE);
 
         // Specified "single"
-        $schema = new Schema([ "type" => Schema::TYPE_SINGLE ] + self::$schemaMock);
-        $this->assertEquals(Schema::TYPE_SINGLE, $schema->getType());
+        $schema = new Object([ "type" => Object::TYPE_SINGLE ] + self::$schemaMock);
+        $this->assertEquals(Object::TYPE_SINGLE, $schema->getType());
 
         // Specified "multiple"
-        $schema = new Schema([ "type" => Schema::TYPE_MULTIPLE ] + self::$schemaMock);
+        $schema = new Object([ "type" => Object::TYPE_MULTIPLE ] + self::$schemaMock);
         $this->assertEquals("multiple", $schema->getType());
 
         // Nothing specified
-        $schema = new Schema(self::$schemaMock);
-        $this->assertEquals(Schema::TYPE_DEFAULT, $schema->getType());
+        $schema = new Object(self::$schemaMock);
+        $this->assertEquals(Object::TYPE_DEFAULT, $schema->getType());
     }
 
     public function testGetIndex(){
         // Specified and multiple
         $options = ["one", 5, "A" => "B"];
-        $filter = new Field([ "filter" => "SomeFilter", "options" => $options]);
-        $schema = new Schema([ "filter" => "SomeFilter", "options" => $options, "type" => Schema::TYPE_MULTIPLE ] + self::$schemaMock);
+        $filter = new Value([ "filter" => "SomeFilter", "options" => $options]);
+        $schema = new Object([ "filter" => "SomeFilter", "options" => $options, "type" => Object::TYPE_MULTIPLE ] + self::$schemaMock);
         $this->assertEquals($filter->export(), $schema->getIndex()->export());
 
         // Specified and single
-        $schema = new Schema([ "filter" => "SomeFilter", "options" => $options, "type" => Schema::TYPE_SINGLE ] + self::$schemaMock);
+        $schema = new Object([ "filter" => "SomeFilter", "options" => $options, "type" => Object::TYPE_SINGLE ] + self::$schemaMock);
         $this->assertNull($schema->getIndex());
 
         // Nothing specified
-        $schema = new Schema(self::$schemaMock);
+        $schema = new Object(self::$schemaMock);
         $this->assertNull($schema->getIndex());
     }
 
     public function testGetDefinitions(){
-        $schema = new Schema(self::$schemaMock);
+        $schema = new Object(self::$schemaMock);
 
         $definitions = $schema->getDefinitions();
 
@@ -86,7 +86,7 @@ class SchemaTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testGetConditionals(){
-        $schema = new Schema(self::$schemaMock);
+        $schema = new Object(self::$schemaMock);
 
         $conditionals = $schema->getConditionals();
 
@@ -97,21 +97,21 @@ class SchemaTest extends \PHPUnit_Framework_TestCase {
 
     public function testGetDefault(){
         // Specified and single
-        $schema = new Schema([ "default" => "Something" ] + self::$schemaMock);
+        $schema = new Object([ "default" => "Something" ] + self::$schemaMock);
         $this->assertEquals("Something", $schema->getDefault());
 
         // Nothing specified
-        $schema = new Schema(self::$schemaMock);
+        $schema = new Object(self::$schemaMock);
         $this->assertNull($schema->getDefault());
     }
 
     public function testGetRequired(){
         // Specified and single
-        $schema = new Schema([ "required" => true ] + self::$schemaMock);
+        $schema = new Object([ "required" => true ] + self::$schemaMock);
         $this->assertTrue($schema->getRequired());
 
         // Nothing specified
-        $schema = new Schema(self::$schemaMock);
+        $schema = new Object(self::$schemaMock);
         $this->assertFalse($schema->getRequired());
     }
 
@@ -141,8 +141,8 @@ class SchemaTest extends \PHPUnit_Framework_TestCase {
             ]
         ];
 
-        $schemaA = new Schema($schemaMockA);
-        $schemaB = new Schema($schemaMockB);
+        $schemaA = new Object($schemaMockA);
+        $schemaB = new Object($schemaMockB);
         $schemaA->merge($schemaB);
 
         $this->assertEquals("multiple", $schemaA->getType());

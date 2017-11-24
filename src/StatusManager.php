@@ -13,8 +13,6 @@ namespace Topolis\Validator;
 use Symfony\Component\Yaml\Yaml;
 use Topolis\FunctionLibrary\Collection;
 use Exception;
-use Topolis\Validator\Schema\Schema;
-use Topolis\Validator\Validators\SchemaValidator;
 
 /**
  * Validator

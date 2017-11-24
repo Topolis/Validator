@@ -1,10 +1,10 @@
 <?php
 
-namespace Topolis\Validator\Schema;
+namespace Topolis\Validator\Schema\Node;
 
-use Topolis\Validator\Traits\MagicGetSet;
+use Topolis\Validator\Schema\INode;
 
-class Field {
+class Value implements INode {
 
     protected $filter = self::FILTER_DEFAULT;
     protected $options = [];
@@ -22,6 +22,10 @@ class Field {
      */
     public function __construct(array $data) {
         $this->import($data);
+    }
+
+    public static function detect($schema) {
+        return is_array($schema) and isset($schema["filter"]);
     }
 
     /**
@@ -122,9 +126,9 @@ class Field {
     }
 
     /**
-     * @param Field $definition
+     * @param Value $definition
      */
-    public function merge(Field $definition){
+    public function merge(Value $definition){
         $this->filter = $definition->getFilter() !== self::FILTER_DEFAULT ? $definition->getFilter() : $this->filter;
         $this->options = array_merge($this->options, $definition->getOptions());
         $this->default = $definition->getDefault() ? $definition->getDefault() : $this->default;

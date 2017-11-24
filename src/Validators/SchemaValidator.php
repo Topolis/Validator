@@ -5,21 +5,21 @@ namespace Topolis\Validator\Validators;
 use Topolis\Filter\Filter;
 use Topolis\FunctionLibrary\Collection;
 use Topolis\Validator\StatusManager;
-use Topolis\Validator\Schema\Field;
-use Topolis\Validator\Schema\Schema;
+use Topolis\Validator\Schema\Value;
+use Topolis\Validator\Schema\Object;
 use Topolis\Validator\ValidatorException;
 
 class SchemaValidator {
 
     protected static $path = [];
 
-    /* @var \Topolis\Validator\Schema\Schema $definition */
+    /* @var \Topolis\Validator\Schema\Object $definition */
     protected $definition;
     protected $statusManager;
 
     protected $data; // The full object to be validated. Needed for Conditionals
 
-    public function __construct(Schema $definition, StatusManager $statusManager) {
+    public function __construct(Object $definition, StatusManager $statusManager) {
         $this->statusManager = $statusManager;
         $this->definition = $definition;
     }
@@ -50,7 +50,7 @@ class SchemaValidator {
         }
 
         // Type if multiple
-        if($definition->getType() == Schema::TYPE_MULTIPLE){
+        if($definition->getType() == Object::TYPE_MULTIPLE){
             $children = array();
             foreach($values as $idx => $child) {
 
@@ -70,7 +70,7 @@ class SchemaValidator {
         }
 
         // Type is single
-        if($definition->getType() == Schema::TYPE_SINGLE) {
+        if($definition->getType() == Object::TYPE_SINGLE) {
             return $this->applyDefinitions($values, $definition);
         }
 
@@ -86,7 +86,7 @@ class SchemaValidator {
 
     /**
      * @param array $values
-     * @param Schema|Field $definition
+     * @param Object|Value $definition
      * @return array
      */
     protected function applyDefinitions($values, $definition){
@@ -110,7 +110,7 @@ class SchemaValidator {
 
             try {
                 // Sub definition is a Schema
-                if ($subdefinition instanceof Schema) {
+                if ($subdefinition instanceof Object) {
                     $validator = new SchemaValidator($subdefinition, $this->statusManager);
                     $value = $value ? $validator->validate($value, $this->data) : [];
 
@@ -121,7 +121,7 @@ class SchemaValidator {
                         Collection::set($valid, $key, $value);
                 }
                 // Subdefinition is a Field
-                elseif ($subdefinition instanceof Field) {
+                elseif ($subdefinition instanceof Value) {
                     $validator = new FieldValidator($subdefinition, $this->statusManager);
                     $value = $validator->validate($value, $this->data);
 

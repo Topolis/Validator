@@ -9,14 +9,14 @@
 namespace Topolis\Validator;
 
 
-use Topolis\Validator\Schema\Field;
+use Topolis\Validator\Schema\Value;
 use Topolis\Validator\Validators\FieldValidator;
 
 class FieldValidatorTest extends \PHPUnit_Framework_TestCase {
 
     protected function assertValid($definition, $input, $expected, $data = []){
         $errorhandler = new StatusManager();
-        $definition = new Field($definition);
+        $definition = new Value($definition);
         $validator = new FieldValidator($definition, $errorhandler);
 
         $result = $validator->validate($input, $data);
@@ -32,7 +32,7 @@ class FieldValidatorTest extends \PHPUnit_Framework_TestCase {
 
     protected function assertInvalid($definition, $input, $status, $data = []){
         $errorhandler = new StatusManager();
-        $definition = new Field($definition);
+        $definition = new Value($definition);
         $validator = new FieldValidator($definition, $errorhandler);
 
         $result = $validator->validate($input, $data);

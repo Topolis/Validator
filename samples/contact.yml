@@ -1,0 +1,28 @@
+# This sample describes a contact with the following fields:
+# - a firstname with international characters
+# - a lastname wirth international characters and makred as required
+# - a list of at least one private or business email
+
+object:
+    properties:
+
+        firstname:
+            filter: PlainExt
+            options: 13 # International
+
+        lastname:
+            filter: PlainExt
+            options: 13 # International
+            required: true
+
+        emails:
+            listing:
+                min: 1
+                key:
+                    filter: Enum
+                    options: {values: [business,private] }
+                value:
+                    filter: Email
+
+# a sample json:
+# { "firstname": "John", "lastname": "Doe", "emails": { "private": "john.doe@test.com" } }

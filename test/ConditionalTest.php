@@ -36,7 +36,7 @@ class ConditionalTest extends \PHPUnit_Framework_TestCase {
 
     public function testGetDefinition(){
 
-        $definition = new Schema([
+        $definition = new Object([
             "filter" => "AFilter",
             "options" => ["A1", "A2", "A3" => "Athree"],
             "required" => true
