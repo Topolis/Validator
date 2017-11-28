@@ -4,44 +4,66 @@ namespace Topolis\Validator\Schema;
 
 use Topolis\FunctionLibrary\Collection;
 use Topolis\Validator\ConditionParser;
-use Topolis\Validator\Traits\MagicGetSet;
 
 class Conditional {
 
-    use MagicGetSet;
-
+    protected $mode;
     protected $condition;
-
-    /* @var \Topolis\Validator\Schema\Object | \Topolis\Validator\Schema\Value $definition */
-    protected $definition;
-    protected $definitionType = false;
-
+    /* @var ConditionParser $parser */
     protected $parser;
+    /* @var INode $node */
+    protected $node;
+    /* @var NodeFactory $factory */
+    protected $factory;
 
-    public function __construct(array $data, $definitionType) {
-        $this->definitionType = $definitionType;
-        $this->import($data);
+    const MODE_REPLACE = "replace";
+    const MODE_MERGE = "merge";
+
+    /**
+     * Conditional constructor.
+     * @param array $schema the schema definition of this conditional
+     * @param array $base the base definition that will be modified
+     * @param NodeFactory $factory
+     */
+    public function __construct(array $schema, array $base, NodeFactory $factory) {
+        $this->factory = $factory;
+        $this->import($schema, $base);
     }
 
     public function setParser(ConditionParser $parser){
         $this->parser = $parser;
     }
 
-    public function import(array $definition){
-        $this->condition = Collection::get($definition, "condition", false);
-        unset($definition["condition"]);
+    public function import(array $schema, array $base){
 
-        $this->definition = new $this->definitionType($definition);
+        $this->condition = Collection::get($schema, "condition", false);
+        $this->mode = Collection::get($schema, "mode", self::MODE_MERGE);
+
+        unset($schema["condition"]);
+        unset($schema["mode"]);
+
+        switch($this->mode){
+            case self::MODE_MERGE:
+                $schema = $schema + $base;
+                break;
+            case self::MODE_REPLACE:
+                break;
+        }
+
+        $this->node = $this->factory->createNode($schema);
     }
 
     public function export(){
-        return [ "condition" => $this->condition ] + $this->definition->export();
+        return [
+            "condition" => $this->condition,
+            "mode" => $this->mode
+        ] + $this->node->export();
     }
 
     // ----------------------------------------------------------------
 
-    public function getDefinition(){
-        return $this->definition;
+    public function getNode(){
+        return $this->node;
     }
 
     public function evaluate($data){

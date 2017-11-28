@@ -2,9 +2,15 @@
 
 namespace Topolis\Validator\Schema\Node;
 
+use Topolis\Validator\Schema\Conditional;
 use Topolis\Validator\Schema\INode;
+use Topolis\Validator\Schema\NodeFactory;
+use Topolis\Validator\Schema\Validators\ValueValidator;
 
 class Value implements INode {
+
+    /* @var NodeFactory $factory */
+    protected $factory;
 
     protected $filter = self::FILTER_DEFAULT;
     protected $options = [];
@@ -19,13 +25,19 @@ class Value implements INode {
     /**
      * Field constructor.
      * @param array $data
+     * @param NodeFactory $factory
      */
-    public function __construct(array $data) {
+    public function __construct(array $data, NodeFactory $factory) {
+        $this->factory = $factory;
         $this->import($data);
     }
 
-    public static function detect($schema) {
+    public static function detect(array $schema) {
         return is_array($schema) and isset($schema["filter"]);
+    }
+
+    public static function validator() {
+        return ValueValidator::class;
     }
 
     /**
@@ -51,7 +63,7 @@ class Value implements INode {
         $this->strict = $data["strict"];
 
         foreach($data["conditionals"] as $conditional){
-            $this->conditionals[] = new Conditional($conditional, get_class($this));
+            $this->conditionals[] = new Conditional($conditional, $data, $this->factory);
         }
     }
 
@@ -126,14 +138,15 @@ class Value implements INode {
     }
 
     /**
-     * @param Value $definition
+     * @param INode $schema
      */
-    public function merge(Value $definition){
-        $this->filter = $definition->getFilter() !== self::FILTER_DEFAULT ? $definition->getFilter() : $this->filter;
-        $this->options = array_merge($this->options, $definition->getOptions());
-        $this->default = $definition->getDefault() ? $definition->getDefault() : $this->default;
-        $this->required = $definition->getRequired() ? $definition->getRequired() : $this->required;
-        $this->remove = $definition->getRemove() ? $definition->getRemove() : $this->remove;
+    public function merge(INode $schema){
+        /* @var Value $schema */
+        $this->filter = $schema->getFilter() !== self::FILTER_DEFAULT ? $schema->getFilter() : $this->filter;
+        $this->options = array_merge($this->options, $schema->getOptions());
+        $this->default = $schema->getDefault() ? $schema->getDefault() : $this->default;
+        $this->required = $schema->getRequired() ? $schema->getRequired() : $this->required;
+        $this->remove = $schema->getRemove() ? $schema->getRemove() : $this->remove;
     }
 
 }

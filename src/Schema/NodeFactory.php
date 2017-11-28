@@ -3,6 +3,7 @@
 namespace Topolis\Validator\Schema;
 
 use Exception;
+use Topolis\Validator\StatusManager;
 
 class NodeFactory {
 
@@ -32,6 +33,12 @@ class NodeFactory {
         }
 
         throw new Exception("Unknown schema node found with keys: ".implode(", ",array_keys($schema)));
+    }
+
+    public function createValidator(INode $node, StatusManager $statusManager) {
+
+        $class = $node::validator();
+        return new $class($node, $statusManager, $this);
     }
 
 }

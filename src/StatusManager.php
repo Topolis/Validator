@@ -10,8 +10,6 @@
 
 namespace Topolis\Validator;
 
-use Symfony\Component\Yaml\Yaml;
-use Topolis\FunctionLibrary\Collection;
 use Exception;
 
 /**
@@ -28,10 +26,12 @@ class StatusManager {
     const SANITIZED = -2;
     const INFO      = -1;
 
+    const VALID     = 1;
+
     protected static $levels = [self::ERROR, self::INVALID, self::SANITIZED, self::INFO];
 
     protected $messages = [];
-    protected $status = true;
+    protected $status = self::VALID;
 
     protected $path = [];
 
@@ -79,6 +79,12 @@ class StatusManager {
 
     public function getPath(){
         return $this->path;
+    }
+
+    public function reset() {
+        $this->messages = [];
+        $this->status = self::VALID;
+        $this->path = [];
     }
 
 }

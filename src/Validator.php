@@ -11,11 +11,13 @@
 namespace Topolis\Validator;
 
 use Symfony\Component\Yaml\Yaml;
-use Topolis\FunctionLibrary\Collection;
 use Exception;
+use Topolis\Validator\Schema\INode;
+use Topolis\Validator\Schema\IValidator;
+use Topolis\Validator\Schema\Node\Listing;
+use Topolis\Validator\Schema\Node\Object;
+use Topolis\Validator\Schema\Node\Value;
 use Topolis\Validator\Schema\NodeFactory;
-use Topolis\Validator\Schema\Object;
-use Topolis\Validator\Validators\SchemaValidator;
 
 /**
  * Validator
@@ -26,39 +28,57 @@ use Topolis\Validator\Validators\SchemaValidator;
 
 class Validator {
 
-    protected $identity;
-    protected $definition;
+    /* @var INode $schema */
+    protected $schema;
+    /* @var IValidator $validator */
+    protected $validator;
+    /* @var StatusManager $errorhandler */
+    protected $errorhandler;
 
     /**
-     * @param string $schemafile             file path to yaml schema file
-     * @param string|boolean $cachefolder    folder path to cache folder
+     * @param $definitionfile
+     * @param string|boolean $cachefolder folder path to cache folder
      */
     public function __construct($definitionfile, $cachefolder = false){
 
-        $definition = null;
+        $this->errorhandler = new StatusManager();
 
-        $cachefile = $cachefolder ? $cachefolder."/".pathinfo($definitionfile, PATHINFO_FILENAME).".definition-cache" : false;
+        $cachefile = $cachefolder ? $cachefolder."/".pathinfo($definitionfile, PATHINFO_FILENAME).".schema-cache" : false;
 
-        if($cachefile){
-            $definition = $this->getCached($cachefile, $definitionfile);
+        $initCompleted = false;
+
+        if($cachefile && !$initCompleted){
+            $cached = $this->getCached($cachefile, $definitionfile);
+
+            if($cached) {
+                $this->schema    = $cached["schema"];
+                $this->validator = $cached["validator"];
+
+                $initCompleted = true;
+            }
         }
 
-        if(!$definition){
+        if(!$initCompleted) {
+
             $definition = $this->getYaml($definitionfile);
 
-            $factory = new NodeFactory();
-            $factory->registerClass( 'Topolis\Validator\Schema\Node\Listing' );
-            $factory->registerClass( 'Topolis\Validator\Schema\Node\Object' );
-            $factory->registerClass( 'Topolis\Validator\Schema\Node\Value' );
+            $this->factory = new NodeFactory();
+            $this->factory->registerClass(Listing::class);
+            $this->factory->registerClass(Object::class);
+            $this->factory->registerClass(Value::class);
 
-            $definition = $factory->createNode($definition);
+            $this->schema = $this->factory->createNode($definition);
+            $this->validator = $this->factory->createValidator($this->schema, $this->errorhandler);
 
-            if($cachefile)
-                $this->setCached($cachefile, $definition);
+            $initCompleted = true;
         }
 
-        $this->identity = pathinfo($definitionfile, PATHINFO_FILENAME);
-        $this->definition = $definition;
+         if($cachefile && $initCompleted) {
+            $this->setCached($cachefile, [
+                "schema"    => $this->schema,
+                "validator" => $this->validator
+            ]);
+        }
     }
 
     // ------------------------------------------------------------------------------------------------------
@@ -71,22 +91,29 @@ class Validator {
      * @return array|bool false (if $quiet and invalid values) or validated $array including defaults
      * @throws Exception
      */
-    public function validate(array $values, $quiet = false, &$errors = array()){
+    public function validate(array $values, $quiet = false){
 
-        $errorHandler = new StatusManager();
-        $validator = new SchemaValidator($this->definition, $errorHandler);
+        $this->errorhandler->reset();
 
-        $valid = $validator->validate($values);
-        $errors = $errorHandler->getMessages();
+        $valid = $this->validator->validate($values);
+        $status = $this->errorhandler->getStatus();
 
-        if($errorHandler->getStatus() <= StatusManager::INVALID){
+        if($status <= StatusManager::INVALID){
             if(!$quiet)
-                throw new Exception("Values for ".$this->identity." object invalid");
+                throw new Exception("Values for object invalid");
             else
                 return false;
         }
 
         return $valid;
+    }
+
+    public function getMessages(){
+        return $this->errorhandler->getMessages();
+    }
+
+    public function getStatus(){
+        return $this->errorhandler->getStatus();
     }
 
     // ------------------------------------------------------------------------------------------------------

@@ -2,8 +2,11 @@
 
 namespace Topolis\Validator\Schema\Node;
 
+use Exception;
 use Topolis\Validator\Schema\Conditional;
 use Topolis\Validator\Schema\INode;
+use Topolis\Validator\Schema\NodeFactory;
+use Topolis\Validator\Schema\Validators\ObjectValidator;
 
 class Object implements INode {
 
@@ -11,8 +14,8 @@ class Object implements INode {
 
     protected $type;
 
-    /* @var Value[]|Object[] $definitions */
-    protected $definitions = [];
+    /* @var INode[] $properties */
+    protected $properties = [];
 
     /* @var Conditional[] $conditionals */
     protected $conditionals = [];
@@ -24,6 +27,9 @@ class Object implements INode {
 
     protected $required;
 
+    /* @var NodeFactory $factory */
+    protected $factory;
+
     // Available definition tyles
     const TYPE_SINGLE = "single";
     const TYPE_MULTIPLE = "multiple";
@@ -32,28 +38,35 @@ class Object implements INode {
     /**
      * Schema constructor.
      * @param array $data
+     * @param NodeFactory $factory
      */
-    public function __construct(array $data) {
+    public function __construct(array $data, NodeFactory $factory) {
+        $this->factory = $factory;
         $this->import($data);
     }
 
-    public static function detect($schema) {
-        return is_array($schema) and isset($schema["object"]["properties"]);
+    public static function detect(array $schema) {
+        return is_array($schema) and isset($schema["properties"]);
+    }
+
+    public static function validator() {
+        return ObjectValidator::class;
     }
 
     /**
      * @param array $data
+     * @throws Exception
      */
     public function import(array $data){
 
         $data = $data + [
             "type" => self::TYPE_DEFAULT,
             "conditionals" => [],
-            "definitions" => [],
             "default" => null,
             "required" => false,
             "filter" => "Passthrough",
-            "options" => []
+            "options" => [],
+            "properties" => [],
         ];
 
         $this->type = $data["type"];
@@ -66,20 +79,19 @@ class Object implements INode {
                 "filter" => $data["filter"],
                 "options" => $data["options"]
             ];
-            $this->index = new Value($field);
+            $this->index = $this->factory->createNode($field);
+
+            if(!$this->index instanceof Value)
+                throw new Exception("Key for property must be of type value");
         }
 
 
         foreach($data["conditionals"] as $conditional){
-            $this->conditionals[] = new Conditional($conditional, get_class($this));
+            $this->conditionals[] = new Conditional($conditional, $data, $this->factory);
         }
 
-        foreach($data["definitions"] as $field => $definition){
-
-            if(isset($definition["definitions"]))
-                $this->definitions[$field] = new Object($definition);
-            else
-                $this->definitions[$field] = new Value($definition);
+        foreach($data["properties"] as $key => $property){
+            $this->properties[$key] = $this->factory->createNode($property);
         }
 
     }
@@ -99,8 +111,8 @@ class Object implements INode {
         foreach($this->conditionals as $conditional)
             $export["conditionals"][] = $conditional->export();
 
-        foreach($this->definitions as $definition)
-            $export["definitions"][] = $definition->export();
+        foreach($this->properties as $property)
+            $export["properties"][] = $property->export();
 
         if($this->type == self::TYPE_MULTIPLE){
             $export["filter"] = $this->index->getFilter();
@@ -127,10 +139,10 @@ class Object implements INode {
     }
 
     /**
-     * @return Value[]|Object[]
+     * @return INode[]
      */
-    public function getDefinitions(){
-        return $this->definitions;
+    public function getProperties(){
+        return $this->properties;
     }
 
     /**
@@ -155,9 +167,11 @@ class Object implements INode {
     }
 
     /**
-     * @param Object $schema
+     * @param INode $schema
      */
-    public function merge(Object $schema){
+    public function merge(INode $schema){
+
+        /* @var Object $schema */
 
         $this->default  = $schema->getDefault()  ? $schema->getDefault()  : $this->default;
         $this->required = $schema->getRequired() ? $schema->getRequired() : $this->required;
@@ -169,11 +183,11 @@ class Object implements INode {
         }
 
         // Definitions
-        foreach ($schema->getDefinitions() as $key => $definition){
-            if(isset($this->definitions[$key]) && get_class($this->definitions[$key]) == get_class($definition))
-                $this->definitions[$key]->merge($definition);
+        foreach ($schema->getProperties() as $key => $property){
+            if(isset($this->properties[$key]) && get_class($this->properties[$key]) == get_class($property))
+                $this->properties[$key]->merge($property);
             else
-                $this->definitions[$key] = $definition;
+                $this->properties[$key] = $property;
         }
 
         // Conditionals (Cant be smartly merged as we dont have a key for them (Might be a CR?)
