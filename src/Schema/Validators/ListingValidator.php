@@ -2,6 +2,7 @@
 
 namespace Topolis\Validator\Schema\Validators;
 
+use Topolis\FunctionLibrary\Collection;
 use Topolis\Validator\Schema\Conditional;
 use Topolis\Validator\Schema\INode;
 use Topolis\Validator\Schema\IValidator;
@@ -74,6 +75,7 @@ class ListingValidator implements IValidator {
                 return null;
             }
 
+            $value = Collection::get($values, $key, $node->getValue()->getDefault());
             $value = $this->valueValidator->validate($value, $this->data);
 
             // Empty value as specified in "remove" - We always treat "" or null as empty

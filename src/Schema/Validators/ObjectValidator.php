@@ -63,6 +63,7 @@ class ObjectValidator implements IValidator  {
 
         // Type if multiple
         if($node->getType() == Object::TYPE_MULTIPLE){
+
             $children = array();
             foreach($values as $idx => $child) {
 
@@ -103,33 +104,48 @@ class ObjectValidator implements IValidator  {
         // Validate a value
         $valid = array();
 
-        $surpusKeys = array_keys(array_diff_key($values, $node->getProperties()));
-        if($surpusKeys){
-            $this->statusManager->addMessage(
-                StatusManager::SANITIZED,
-                "Invalid - Additional keys present (".implode(",",$surpusKeys).")",
-                $values,
-                $node
-            );
+        if(is_array($values)){
+            $surpusKeys = array_keys(array_diff_key($values, $node->getProperties()));
+            if($surpusKeys){
+                $this->statusManager->addMessage(
+                    StatusManager::SANITIZED,
+                    "Invalid - Additional keys present (".implode(",",$surpusKeys).")",
+                    $values,
+                    $node
+                );
+            }
         }
 
         /* @var INode $subnode */
         foreach($node->getProperties() as $key => $subnode){
 
-            $value = Collection::get($values, $key, $subnode->getDefault());
             $this->statusManager->enterPath($key);
 
             try {
-                $value = $this->propertyValidator[$key]->validate($value, $this->data);
 
-                // Empty value as specified in "remove" - We always treat "" or null as empty
-                $remove = method_exists($subnode, "getRemove") && is_array($subnode->getRemove()) && in_array($value, $subnode->getRemove());
+                // Propery does not exist and no default specified
+                if(!isset($values[$key]) && $subnode->getDefault() == null){
+                    if ($subnode->getRequired())
+                        throw new ValidatorException("Required property is missing");
 
-                if ($subnode->getRequired() && ($value == null || $remove))
-                    throw new ValidatorException("Required field is missing");
+                    continue;
+                }
 
-                if(!$remove)
-                    Collection::set($valid, $key, $value);
+                // Property exists
+                else {
+                    $value = Collection::get($values, $key, $subnode->getDefault());
+
+                    $value = $this->propertyValidator[$key]->validate($value, $this->data);
+
+                    // Empty value as specified in "remove" - We always treat "" or null as empty
+                    $remove = method_exists($subnode, "getRemove") && is_array($subnode->getRemove()) && in_array($value, $subnode->getRemove());
+
+                    if ($subnode->getRequired() && ($value == null || $remove))
+                        throw new ValidatorException("Required field is empty");
+
+                    if(!$remove)
+                        Collection::set($valid, $key, $value);
+                }
 
             } catch (ValidatorException $e) {
                 // Error reporting

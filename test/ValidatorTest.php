@@ -9,12 +9,15 @@
 namespace Topolis\Validator;
 
 
+use Symfony\Component\Yaml\Yaml;
+
 class ValidatorTest extends \PHPUnit_Framework_TestCase {
 
     protected function assertValid($schema, $input, $expected){
         $validator = new Validator(__DIR__."/schemas/".$schema);
 
-        $result = $validator->validate($input, false, $errors);
+        $result = $validator->validate($input, false);
+        $errors = $validator->getMessages();
 
         $this->assertEquals($expected, $result);
         $this->assertEmpty($errors);
@@ -23,40 +26,34 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase {
     protected function assertInvalid($schema, $input){
         $validator = new Validator(__DIR__."/schemas/".$schema);
 
-        $result = $validator->validate($input, false, $errors);
+        $result = $validator->validate($input, false);
+        $errors = $validator->getMessages();
+
         $this->assertNull($result);
         $this->assertNotEmpty($errors);
     }
 
 
-    public function testSimpleValid(){
+    public function testSchemas(){
 
-        $this->assertValid("test-simple.yml", [
-            "one" => "A",
-            "two" => "B",
-            "three" => "C"
-        ], [
-            "one" => "A",
-            "two" => "B",
-            "three" => "C"
-        ]);
+        $tests = [];
 
-        $this->assertValid("test-simple.yml", [
-            "two" => "B",
-        ], [
-            "one" => '', // Plain filter map's false/null to
-            "two" => "B",
-            "three" => "threeD"
-        ]);
+        $d = dir(__DIR__."/schemas");
+        while (false !== ($entry = $d->read())) {
 
-        $this->assertValid("test-simple.yml", [
-            "one" => "A",
-            "two" => "B",
-        ], [
-            "one" => "A",
-            "two" => "B",
-            "three" => "threeD"
-        ]);
+            $ext = pathinfo($entry, PATHINFO_EXTENSION);
+            $file = pathinfo($entry, PATHINFO_FILENAME);
 
+            if($ext == "yml"){
+
+                $schema   = $d->path."/".$file.".yml";
+                $input    = json_decode( file_get_contents( $d->path."/".$file."-in.json" ), true);
+                $expected = json_decode( file_get_contents( $d->path."/".$file."-out.json" ), true);
+
+                $this->assertValid($schema, $input, $expected);
+
+            }
+        }
+        $d->close();
     }
 }

@@ -39,16 +39,17 @@ class Conditional {
         $this->condition = Collection::get($schema, "condition", false);
         $this->mode = Collection::get($schema, "mode", self::MODE_MERGE);
 
-        unset($schema["condition"]);
-        unset($schema["mode"]);
-
         switch($this->mode){
             case self::MODE_MERGE:
-                $schema = $schema + $base;
+                $schema = array_replace_recursive($base, $schema);
                 break;
             case self::MODE_REPLACE:
                 break;
         }
+
+        unset($schema["conditionals"]);
+        unset($schema["condition"]);
+        unset($schema["mode"]);
 
         $this->node = $this->factory->createNode($schema);
     }

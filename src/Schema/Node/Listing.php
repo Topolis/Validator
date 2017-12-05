@@ -50,26 +50,32 @@ class Listing implements INode {
      * @throws Exception
      */
     public function import(array $data){
-
-        $data = $data["listing"] + [
-                "conditionals" => [],
+        $schema = array_replace_recursive([
+            "listing" => [
                 "default" => null,
                 "required" => false,
                 "min" => false,
                 "max" => false,
                 "key" => [],
                 "value" => [],
-            ];
+            ],
+            "conditionals" => []
+        ], $data);
 
-        $this->default = $data["default"];
-        $this->required = $data["required"];
+        $conditionals = $schema["conditionals"];
+        unset($schema["conditionals"]);
 
-        foreach($data["conditionals"] as $conditional){
-            $this->conditionals[] = new Conditional($conditional, $data, $this->factory);
+        $this->min = $schema["listing"]["min"];
+        $this->max = $schema["listing"]["max"];
+        $this->default = $schema["listing"]["default"];
+        $this->required = $schema["listing"]["required"];
+
+        foreach($conditionals as $conditional){
+            $this->conditionals[] = new Conditional($conditional, $schema, $this->factory);
         }
 
-        $this->key = $this->factory->createNode($data["key"]);
-        $this->value = $this->factory->createNode($data["value"]);
+        $this->key = $this->factory->createNode($schema["listing"]["key"]);
+        $this->value = $this->factory->createNode($schema["listing"]["value"]);
 
         if(!$this->key instanceof Value)
             throw new Exception("Key for listing must be of type value");
@@ -80,13 +86,15 @@ class Listing implements INode {
      */
     public function export() {
         $export = [
+            "listing" => [
+                "default" => $this->getDefault(),
+                "required" => $this->getRequired(),
+                "min" => $this->getMin(),
+                "max" => $this->getMax(),
+                "key" => $this->getKey()->export(),
+                "value" => $this->getValue()->export()
+            ],
             "conditionals" => [],
-            "default" => $this->getDefault(),
-            "required" => $this->getRequired(),
-            "min" => $this->getMin(),
-            "max" => $this->getMax(),
-            "key" => $this->getKey(),
-            "value" => $this->getValue()
         ];
 
         foreach($this->conditionals as $conditional)

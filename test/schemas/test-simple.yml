@@ -1,6 +1,6 @@
 name: editor
 
-definitions:
+properties:
     one:
         filter: Plain
         required: false

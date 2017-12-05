@@ -6,18 +6,31 @@
  * Time: 13:55
  */
 
-namespace Topolis\Validator;
+namespace Topolis\Validator\Schema\Validators;
 
 
-use Topolis\Validator\Schema\Value;
-use Topolis\Validator\Validators\ValueValidator;
+use Topolis\Validator\Schema\Node\Listing;
+use Topolis\Validator\Schema\Node\Object;
+use Topolis\Validator\Schema\Node\Value;
+use Topolis\Validator\Schema\NodeFactory;
+use Topolis\Validator\StatusManager;
 
-class FieldValidatorTest extends \PHPUnit_Framework_TestCase {
+class ValueValidatorTest extends \PHPUnit_Framework_TestCase {
+
+    /* @var NodeFactory $factory */
+    protected $factory;
+
+    protected function setUp() {
+        $this->factory = new NodeFactory();
+        $this->factory->registerClass(Listing::class);
+        $this->factory->registerClass(Object::class);
+        $this->factory->registerClass(Value::class);
+    }
 
     protected function assertValid($definition, $input, $expected, $data = []){
         $errorhandler = new StatusManager();
-        $definition = new Value($definition);
-        $validator = new ValueValidator($definition, $errorhandler);
+        $definition = new Value($definition, $this->factory);
+        $validator = new ValueValidator($definition, $errorhandler, $this->factory);
 
         $result = $validator->validate($input, $data);
 
@@ -26,14 +39,14 @@ class FieldValidatorTest extends \PHPUnit_Framework_TestCase {
             $message = $errorhandler->getMessages()[0]["message"];
 
         $this->assertEmpty($errorhandler->getMessages(), $message);
-        $this->assertTrue($errorhandler->getStatus(), $message);
+        $this->assertEquals(StatusManager::VALID, $errorhandler->getStatus(), $message);
         $this->assertEquals($expected, $result);
     }
 
     protected function assertInvalid($definition, $input, $status, $data = []){
         $errorhandler = new StatusManager();
-        $definition = new Value($definition);
-        $validator = new ValueValidator($definition, $errorhandler);
+        $definition = new Value($definition, $this->factory);
+        $validator = new ValueValidator($definition, $errorhandler, $this->factory);
 
         $result = $validator->validate($input, $data);
 

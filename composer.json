@@ -22,6 +22,9 @@
         "topolis/filter": "^2.0",
         "symfony/yaml": "*"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^5.7"
+    },
     "autoload" : {
         "psr-4" : {
            "Topolis\\Validator\\" : "src"

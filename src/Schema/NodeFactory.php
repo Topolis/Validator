@@ -22,6 +22,9 @@ class NodeFactory {
 
     public function createNode(array $schema) {
 
+        if(!$schema)
+            throw new Exception("Schema node is empty");
+
         foreach ($this->registry as $class) {
 
             /* @var $class INode */

@@ -8,23 +8,40 @@
 
 namespace Topolis\Validator\Schema;
 
+use Topolis\Validator\Schema\Node\Listing;
+use Topolis\Validator\Schema\Node\Object;
+use Topolis\Validator\Schema\Node\Value;
+
 class ConditionalTest extends \PHPUnit_Framework_TestCase {
+
+    /* @var NodeFactory $factory */
+    protected $factory;
+
+    protected function setUp() {
+        $this->factory = new NodeFactory();
+        $this->factory->registerClass(Listing::class);
+        $this->factory->registerClass(Object::class);
+        $this->factory->registerClass(Value::class);
+    }
 
     public function testImportExport(){
         $conditional = new Conditional([
-            "condition" => "some.thing > 5"
-        ], "Topolis\Validator\Schema\Schema");
+            "condition" => "some.thing > 5",
+            "filter" => "filterA"
+        ], ["filter" => "filterB", "options" => ["A" => "B"]], $this->factory);
 
         $this->assertInstanceOf("Topolis\Validator\Schema\Conditional", $conditional);
-        $this->assertInstanceOf("Topolis\Validator\Schema\Schema", $conditional->getDefinition());
+        $this->assertInstanceOf("Topolis\Validator\Schema\INode", $conditional->getNode());
 
         $this->assertEquals([
             "condition" => "some.thing > 5",
-            "definitions" => [],
-            "type" => "single",
-            "conditionals" => [],
+            'mode' => 'merge',
+            "filter" => "filterA",
+            'options' => ["A" => "B"],
             "default" => null,
-            "required" => false
+            "required" => false,
+            'remove' => false,
+            'strict' => false
         ], $conditional->export());
     }
 
@@ -34,28 +51,60 @@ class ConditionalTest extends \PHPUnit_Framework_TestCase {
     }
     */
 
-    public function testGetDefinition(){
-
-        $definition = new Object([
-            "filter" => "AFilter",
-            "options" => ["A1", "A2", "A3" => "Athree"],
-            "required" => true
-        ]);
+    public function testGetDefinitionMerge(){
 
         $conditional = new Conditional([
             "condition" => "some.thing <= 9",
-        ] + $definition->export(), "Topolis\Validator\Schema\Schema" );
+            "filter" => "Afilter",
+            "options" => ["A1", "A2", "A3" => "Athree"],
+            "required" => true
+        ], [
+            "filter" => "Bfilter",
+            "options" => ["B1" => "B"],
+            "strict" => true
+        ], $this->factory );
 
         $this->assertInstanceOf("Topolis\Validator\Schema\Conditional", $conditional);
-        $this->assertInstanceOf("Topolis\Validator\Schema\Schema", $conditional->getDefinition());
+        $this->assertInstanceOf("Topolis\Validator\Schema\Node\Value", $conditional->getNode());
 
         $this->assertEquals([
             "condition" => "some.thing <= 9",
-            "definitions" => [],
-            "type" => "single",
-            "conditionals" => [],
+            "mode" => "merge",
+            "filter" => "Afilter",
+            'options' => ["A1", "A2", "A3" => "Athree", "B1" => "B"],
             "default" => null,
+            "required" => true,
+            'remove' => false,
+            'strict' => true
+        ], $conditional->export());
+    }
+
+    public function testGetDefinitionReplace(){
+
+        $conditional = new Conditional([
+            "condition" => "some.thing <= 9",
+            "mode" => "replace",
+            "filter" => "Afilter",
+            "options" => ["A1", "A2", "A3" => "Athree"],
             "required" => true
+        ], [
+            "filter" => "Bfilter",
+            "options" => ["B1" => "B"],
+            "strict" => true
+        ], $this->factory );
+
+        $this->assertInstanceOf("Topolis\Validator\Schema\Conditional", $conditional);
+        $this->assertInstanceOf("Topolis\Validator\Schema\Node\Value", $conditional->getNode());
+
+        $this->assertEquals([
+            "condition" => "some.thing <= 9",
+            "mode" => "replace",
+            "filter" => "Afilter",
+            'options' => ["A1", "A2", "A3" => "Athree"],
+            "default" => null,
+            "required" => true,
+            'remove' => false,
+            'strict' => false
         ], $conditional->export());
     }
 

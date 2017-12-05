@@ -66,7 +66,7 @@ class Object implements INode {
             "required" => false,
             "filter" => "Passthrough",
             "options" => [],
-            "properties" => [],
+            "properties" => []
         ];
 
         $this->type = $data["type"];
@@ -85,7 +85,6 @@ class Object implements INode {
                 throw new Exception("Key for property must be of type value");
         }
 
-
         foreach($data["conditionals"] as $conditional){
             $this->conditionals[] = new Conditional($conditional, $data, $this->factory);
         }
@@ -103,7 +102,7 @@ class Object implements INode {
         $export = [
             "type" => $this->getType(),
             "conditionals" => [],
-            "definitions" => [],
+            "properties" => [],
             "default" => $this->getDefault(),
             "required" => $this->getRequired()
         ];
