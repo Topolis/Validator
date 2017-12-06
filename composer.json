@@ -18,7 +18,7 @@
         }
     ],
     "require": {
-        "topolis/function-library": "dev-master",
+        "topolis/function-library": "*",
         "topolis/filter": "^2.0",
         "symfony/yaml": "*"
     },
