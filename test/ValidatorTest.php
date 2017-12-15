@@ -36,24 +36,40 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase {
 
     public function testSchemas(){
 
-        $tests = [];
+        $config = Yaml::parse( file_get_contents(__DIR__."/schemas/_config.yml") );
 
-        $d = dir(__DIR__."/schemas");
-        while (false !== ($entry = $d->read())) {
+        foreach($config["tests"] as $test){
 
-            $ext = pathinfo($entry, PATHINFO_EXTENSION);
-            $file = pathinfo($entry, PATHINFO_FILENAME);
+            $Validator = new Validator(__DIR__."/schemas/".$test["schema"]);
 
-            if($ext == "yml"){
+            foreach($test["input"] as $testconfig){
 
-                $schema   = $d->path."/".$file.".yml";
-                $input    = json_decode( file_get_contents( $d->path."/".$file."-in.json" ), true);
-                $expected = json_decode( file_get_contents( $d->path."/".$file."-out.json" ), true);
+                list($input, $expected, $expectedStatus) = $testconfig;
 
-                $this->assertValid($schema, $input, $expected);
+                $inputData = json_decode( file_get_contents(__DIR__."/schemas/".$input), true );
+                $expectedData = $expected ? json_decode( file_get_contents(__DIR__."/schemas/".$expected), true ) : $expected;
+
+                $result = $Validator->validate($inputData, true);
+                $status = $Validator->getStatus();
+                $messages = $Validator->getMessages();
+
+                $debug = "Messages:\n";
+                if($messages) {
+                    foreach($messages as $message)
+                        $debug.= "  - ".$message["message"]." - at ".implode(".",$message["path"])."\n";
+                }
+
+                $this->assertEquals($expectedData, $result, "Invalid result for schema '".$test["schema"]."' and data '".$input."'\n".$debug);
+                $this->assertEquals($expectedStatus, $status, "Invalid status for schema '".$test["schema"]."' and data '".$input."'\n".$debug);
+
+                if($status == StatusManager::VALID)
+                    $this->assertEmpty($messages, "Messages found for schema '".$test["schema"]."' and data '".$input."'");
+                else
+                    $this->assertNotEmpty($messages, "Messages not found for schema '".$test["schema"]."' and data '".$input."'");
+
+                echo "Test ".$test["schema"]." / ".$input." > OK\n";
 
             }
         }
-        $d->close();
     }
 }

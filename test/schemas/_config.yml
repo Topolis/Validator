@@ -1,0 +1,17 @@
+# Specify a list of tests for schemas below "tests:"
+tests:
+
+    # A sample test for a simple contact schema
+    # All inputs need to be an array of three fields:
+    #  1) file containing json data used as input
+    #  2) file containing json data used expected result OR 'null'
+    #  3) expedted status values. One of the allowed status codes returned from validator:
+    #    ERROR     = -100
+    #    INVALID   = -11
+    #    SANITIZED = -2
+    #    INFO      = -1
+    #    VALID     = 1
+    - schema: contact-simple.yml                                                    # filename of schema
+      input:                                                                        # list of tests for schema
+          - ["contact-simple.in1.json", "contact-simple.out.json", -2]             # test for a sanitizable input
+          - ["contact-simple.in2.json", null, -11]                                  # test for an invalid input

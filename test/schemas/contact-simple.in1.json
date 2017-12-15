@@ -1,0 +1,7 @@
+{
+    "firstname": "Joh$n",
+    "lastname": "Doe",
+    "emails": {
+        "private": "john.doe@test.com"
+    }
+}
