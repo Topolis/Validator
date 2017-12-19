@@ -7,11 +7,11 @@ properties:
 
     firstname:
         filter: PlainExt
-        options: [characterset: 13] # International
+        options: {characterset: 13} # International
 
     lastname:
         filter: PlainExt
-        options: [characterset: 13] # International
+        options: {characterset: 13} # International
         required: true
 
     emails:

@@ -120,7 +120,8 @@ class ObjectValidator implements IValidator  {
         foreach($node->getProperties() as $key => $subnode){
 
             $this->statusManager->enterPath($key);
-
+            $value = null;
+            
             try {
 
                 // Propery does not exist and no default specified

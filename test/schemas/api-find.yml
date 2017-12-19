@@ -1,0 +1,36 @@
+properties:
+
+    limit:
+        default: 0
+        filter: Number
+        options: {min: 0, max: 100, decimals: false}
+
+    offset:
+        default: 0
+        filter: Number
+        options: {min: 0, decimals: false}
+
+    order:
+        listing:
+            key:
+                filter: PlainExt
+                options: {characterset: 1, characters: "+_"}
+            value:
+                filter: Boolean
+
+    filters:
+        listing:
+            key:
+                filter: PlainExt
+                options: {characterset: 1, characters: "+_-"}
+                strict: true
+            value:
+                filter: PlainExt
+                options: {characterset: 13, characters: "+.\\-_"}
+
+    search:
+        filter: PlainExt
+        options: {characterset: 13, characters: ".-_ "}
+
+    csrf:
+        filter: Plain

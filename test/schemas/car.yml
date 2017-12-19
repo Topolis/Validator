@@ -1,0 +1,25 @@
+properties:
+
+    brand:
+        filter: PlainExt
+        options: {characterset: 13, characters: " -"}
+        required: true
+
+    model:
+        filter: PlainExt
+        options: {characterset: 13, characters: " -"}
+        required: true
+
+    color:
+        filter: Plain
+        required: true
+
+    doors:
+        filter: Number
+        options: {min: 3, max: 7}
+        default: 5
+
+    engine:
+        filter: Enum
+        options: {values: [gas, diesel, electric] }
+        default: gas

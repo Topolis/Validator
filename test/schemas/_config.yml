@@ -13,5 +13,20 @@ tests:
     #    VALID     = 1
     - schema: contact-simple.yml                                                    # filename of schema
       input:                                                                        # list of tests for schema
-          - ["contact-simple.in1.json", "contact-simple.out.json", -2]             # test for a sanitizable input
-          - ["contact-simple.in2.json", null, -11]                                  # test for an invalid input
+          - ["contact-simple.in1.json", "contact-simple.out.json", -2]              # test for a sanitizable input
+          - ["contact-simple.in2.json", null, -11]
+
+    - schema: api-find.yml
+      input:
+          - ["api-find.valid.in.json", 'api-find.valid.out.json', 1]
+          - ["api-find.sanitized.in.json", 'api-find.sanitized.out.json', -2]
+          - ["api-find.failed.in.json", null, -11]
+
+    - schema: car.yml
+      input:
+          - ["car.in1.json", "car.out1.json", 1]
+
+    # FAILURE - This tests creates wrong numbers in version, but only if another sanitization (the url) happens
+    - schema: error.number.yml
+      input:
+          - ["error.number.in.json", "error.number.in.json", 1]

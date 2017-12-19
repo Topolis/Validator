@@ -64,7 +64,7 @@ class StatusManager {
             "path" => $this->path
         ];
 
-        $this->status = $this->status == true ? $level : min($this->status, $level);
+        $this->status = min($this->status, $level);
 
         $this->messages[] = $message;
     }

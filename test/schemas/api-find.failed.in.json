@@ -1,0 +1,15 @@
+{
+    "limit": 10,
+    "offset": -1020,
+    "order": {
+        "field_1": true,
+        "field 2": false
+    },
+    "filters": {
+        "field§1": "value_1$1",
+        "field+2": "value-2&2"
+    },
+    "search": "search string to be found",
+    "csrf": "helloworldformtexthti4ngtoken1 "
+
+}

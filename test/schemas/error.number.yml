@@ -1,0 +1,27 @@
+properties:
+    title:
+        filter: PlainExt
+        options: {characterset: 13, characters: " "}
+    intro:
+        filter: PlainExt
+        options: {characterset: 13, characters: " "}
+    text:
+        filter: PlainExt
+        options: {characterset: 13, characters: " "}
+    image:
+        filter: Url
+    version:
+        filter: Number
+        options:
+            decimals: 0
+            round: false
+    author:
+        listing:
+            min: 1
+            key:
+                filter: Enum
+                options: {values: [internal,external] }
+            value:
+                filter: PlainExt
+                options: {characterset: 13, characters: " "}
+                required: true

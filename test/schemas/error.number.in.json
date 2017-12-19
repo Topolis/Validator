@@ -1,0 +1,10 @@
+{
+  "title": "title",
+  "intro": "intro",
+  "text": "text",
+  "version": "1",
+  "image": "http://www.glamour .de/image.png",
+  "author": {
+    "internal": "Voll der Autor"
+  }
+}
