@@ -12,3 +12,4 @@ A complex validator that applies a yaml based schema file to a multi dimensional
 - definition wrong in StatusManager
 - Message "Invalid - Additional keys present" is -2 but sounds like -11
 - Relative paths in condition parser
+- Auto incremental indexes in listings
