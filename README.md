@@ -13,3 +13,4 @@ A complex validator that applies a yaml based schema file to a multi dimensional
 - Message "Invalid - Additional keys present" is -2 but sounds like -11
 - Relative paths in condition parser
 - Auto incremental indexes in listings
+- Invalid property gets removed even when required (See type in content.yml)
