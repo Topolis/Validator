@@ -11,3 +11,4 @@ A complex validator that applies a yaml based schema file to a multi dimensional
 - properties that have a `null` value seem to create bad paths in StatusManager
 - definition wrong in StatusManager
 - Message "Invalid - Additional keys present" is -2 but sounds like -11
+- Relative paths in condition parser
