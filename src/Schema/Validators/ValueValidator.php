@@ -35,7 +35,7 @@ class ValueValidator implements IValidator {
         // Apply conditionals
         /* @var Conditional $conditional */
         foreach($node->getConditionals() as $conditional){
-            if($conditional->evaluate($data))
+            if($conditional->evaluate($data, $this->statusManager))
                 $node = $conditional->getNode();
         }
 

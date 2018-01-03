@@ -54,7 +54,7 @@ class ListingValidator implements IValidator {
         // Apply conditionals
         /* @var Conditional $conditional */
         foreach($node->getConditionals() as $conditional){
-            if($conditional->evaluate($data))
+            if($conditional->evaluate($data, $this->statusManager))
                 $node = $conditional->getNode();
         }
 
@@ -77,7 +77,7 @@ class ListingValidator implements IValidator {
                 $value = $value !== null ? $value : $node->getValue()->getDefault();
                 $value = $this->valueValidator->validate($value, $this->data);
 
-                if ($node->getValue()->getRequired() && $value == null)
+                if ($node->getValue()->getRequired() && $value === null)
                     throw new ValidatorException("Invalid - Required field is missing");
 
                 $valid[$key] = $value;

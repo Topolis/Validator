@@ -25,11 +25,7 @@ tests:
       input:
           - ["car.in1.json", "car.out1.json", 1]
 
-    # CND test of a complex contentapi import
-    - schema: content.yml
-      input:
-          - ["content.in.json", "content.in.json", 1]
-
     - schema: error.number.yml
       input:
           - ["error.number.in.json", "error.number.in.json", 1]
+

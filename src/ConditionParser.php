@@ -29,6 +29,9 @@ use Topolis\FunctionLibrary\Collection;
 
 class ConditionParser {
 
+    /* @var StatusManager $statusManager */
+    protected $StatusManager;
+
     const LESS      = '<';
     const GREATER   = '>';
     const LESSEQ    = '<=';
@@ -38,7 +41,12 @@ class ConditionParser {
     const IN        = 'in';
     const NOTIN     = 'notin';
 
-    public function __construct() {
+    const PATH_SEPARATOR = '/';
+    const PATH_RELATIVE = '.';
+    const PATH_BACK = '..';
+
+    public function __construct(StatusManager $StatusManager) {
+        $this->StatusManager = $StatusManager;
     }
 
     /**
@@ -52,7 +60,7 @@ class ConditionParser {
         if(!is_string($condition))
             throw new Exception("Invalid condition found - Not a string");
 
-        $match = preg_match('/^([a-z.\-\_]+) (<|>|==|<=|>=|!=|in|notin) (.+)$/i', $condition, $matches);
+        $match = preg_match('/^([a-z.\-\_'.preg_quote(self::PATH_RELATIVE.self::PATH_BACK.self::PATH_SEPARATOR, "/").']+) (<|>|==|<=|>=|!=|in|notin) (.+)$/i', $condition, $matches);
         if(!$match)
             throw new Exception("Invalid condition found");
 
@@ -95,8 +103,47 @@ class ConditionParser {
      * @param array $data
      * @return array|mixed|null
      */
-    protected function getData($key, array $data){
-        return Collection::get($data, $key, null);
+    protected function getData($path, array $data){
+
+        $path = $this->resolvePath($path);
+
+        try{
+            return Collection::getFromPath($data, $path, self::PATH_SEPARATOR);
+        }
+        catch(Exception $e) {
+            return null;
+        }
+    }
+
+    protected function resolvePath($path) {
+
+        // Absolute path with no backwards or local nodes
+        if(strpos($path, self::PATH_SEPARATOR) === 0 &&
+           strpos($path, self::PATH_BACK) === false &&
+           strpos($path, self::PATH_RELATIVE) === false)
+            return trim($path, self::PATH_SEPARATOR);
+
+        // Prefix with current absolute path
+        $path = array_merge($this->StatusManager->getPath(), explode(self::PATH_SEPARATOR, $path));
+
+        // Resolve path
+        $resolved = [];
+        foreach($path as $idx => $node) {
+            switch((string)$node){
+
+                case self::PATH_RELATIVE;
+                    break;
+
+                case self::PATH_BACK;
+                    array_pop($resolved);
+                    break;
+
+                default:
+                    array_push($resolved, $node);
+            }
+        }
+
+        return implode(self::PATH_SEPARATOR, $resolved);
     }
 
     /**

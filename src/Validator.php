@@ -87,7 +87,6 @@ class Validator {
      * Validate $array of values according to field definitions
      * @param array $values values to validate
      * @param bool $quiet throw exception on error or just quietly return false
-     * @param array $errors
      * @return array|bool false (if $quiet and invalid values) or validated $array including defaults
      * @throws Exception
      */

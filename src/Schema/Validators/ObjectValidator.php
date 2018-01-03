@@ -17,6 +17,7 @@ class ObjectValidator implements IValidator  {
     /* @var Object $node */
     protected $node;
     protected $statusManager;
+    protected $factory;
 
     protected $indexValidator;
     protected $propertyValidator = [];
@@ -25,17 +26,10 @@ class ObjectValidator implements IValidator  {
 
     public function __construct(INode $node, StatusManager $statusManager, NodeFactory $factory) {
         $this->statusManager = $statusManager;
+        $this->factory = $factory;
 
         /* @var \Topolis\Validator\Schema\Node\Object $node */
         $this->node = $node;
-
-        // Index Validator for type multiple
-        if($node->getType() == Object::TYPE_MULTIPLE)
-            $this->indexValidator = new ValueValidator($node->getIndex(), $this->statusManager, $factory);
-
-        // Property validators
-        foreach($node->getProperties() as $key => $subnode)
-            $this->propertyValidator[$key] = $factory->createValidator($subnode, $this->statusManager);
     }
 
     /**
@@ -55,9 +49,17 @@ class ObjectValidator implements IValidator  {
         // Apply conditionals
         /* @var Conditional $conditional */
         foreach($node->getConditionals() as $conditional){
-            if($conditional->evaluate($data))
+            if($conditional->evaluate($data, $this->statusManager))
                 $node = $conditional->getNode();
         }
+
+        // Index Validator for type multiple
+        if($node->getType() == Object::TYPE_MULTIPLE)
+            $this->indexValidator = new ValueValidator($node->getIndex(), $this->statusManager, $this->factory);
+
+        // Property validators
+        foreach($node->getProperties() as $key => $subnode)
+            $this->propertyValidator[$key] = $this->factory->createValidator($subnode, $this->statusManager);
 
         // Type if multiple
         if($node->getType() == Object::TYPE_MULTIPLE){
@@ -107,7 +109,7 @@ class ObjectValidator implements IValidator  {
             if($surpusKeys){
                 $this->statusManager->addMessage(
                     StatusManager::SANITIZED,
-                    "Invalid - Additional keys present (".implode(",",$surpusKeys).")",
+                    "Sanitized - Additional keys present (".implode(",",$surpusKeys).")",
                     $values,
                     $node
                 );
@@ -123,7 +125,7 @@ class ObjectValidator implements IValidator  {
             try {
 
                 // Propery does not exist and no default specified
-                if(!isset($values[$key]) && $subnode->getDefault() == null){
+                if(!isset($values[$key]) && $subnode->getDefault() === null){
                     if ($subnode->getRequired())
                         throw new ValidatorException("Invalid - Required property is missing");
                 }
@@ -134,7 +136,7 @@ class ObjectValidator implements IValidator  {
 
                     $value = $this->propertyValidator[$key]->validate($value, $this->data);
 
-                    if ($subnode->getRequired() && $value == null)
+                    if ($subnode->getRequired() && $value === null)
                         throw new ValidatorException("Invalid - Required field is empty");
 
                     // FIXME: the "Remove empty properties" feature has been removed and needs to be reimplemented in a cleaner way if realy needed

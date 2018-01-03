@@ -4,6 +4,7 @@ namespace Topolis\Validator\Schema;
 
 use Topolis\FunctionLibrary\Collection;
 use Topolis\Validator\ConditionParser;
+use Topolis\Validator\StatusManager;
 
 class Conditional {
 
@@ -24,6 +25,7 @@ class Conditional {
      * @param array $schema the schema definition of this conditional
      * @param array $base the base definition that will be modified
      * @param NodeFactory $factory
+     * @param StatusManager $StatusManager
      */
     public function __construct(array $schema, array $base, NodeFactory $factory) {
         $this->factory = $factory;
@@ -35,7 +37,6 @@ class Conditional {
     }
 
     public function import(array $schema, array $base){
-
         $this->condition = Collection::get($schema, "condition", false);
         $this->mode = Collection::get($schema, "mode", self::MODE_MERGE);
 
@@ -67,9 +68,9 @@ class Conditional {
         return $this->node;
     }
 
-    public function evaluate($data){
+    public function evaluate($data, StatusManager $StatusManager){
         // TODO: Remove this line and allow parsers to be set from outside during schema load (We cant do this globaly atm as we do not want statics or globals)
-        $parser = $this->parser ? $this->parser : new ConditionParser();
+        $parser = $this->parser ? $this->parser : new ConditionParser($StatusManager);
 
         return $parser->parse($this->condition, $data);
     }
