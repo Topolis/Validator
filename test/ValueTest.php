@@ -30,7 +30,6 @@ class ValueTest extends \PHPUnit_Framework_TestCase {
             "options" => ["A1", "A2", "A3" => "Athree"],
             "default" => true,
             "required" => false,
-            "remove" => false,
             "strict" => false
         ], $value->export());
     }
@@ -80,20 +79,6 @@ class ValueTest extends \PHPUnit_Framework_TestCase {
         $this->assertFalse($value->getRequired());
     }
 
-    public function testGetRemove(){
-        // Specified
-        $value = new Value([ "remove" => true ], new NodeFactory());
-        $this->assertTrue($value->getRemove());
-
-        $value = new Value([ "remove" => false ], new NodeFactory());
-        $this->assertFalse($value->getRemove());
-
-
-        // Nothing specified
-        $value = new Value([], new NodeFactory());
-        $this->assertFalse($value->getRemove());
-    }
-
     public function testMerge(){
         $valueA = new Value([
             "filter" => "AFilter",
@@ -115,7 +100,6 @@ class ValueTest extends \PHPUnit_Framework_TestCase {
             "options" => ["A1", "A2", "A3" => "Athree", "B1", "B2", "B3" => "Bthree"],
             "default" => true,
             "required" => true,
-            "remove" => false,
             "strict" => false
         ], $valueA->export());
     }

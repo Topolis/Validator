@@ -115,49 +115,6 @@ class ObjectValidatorTest extends \PHPUnit_Framework_TestCase {
         );
     }
 
-    public function testValidateFilterFieldsRemove(){
-
-        $fieldA = [
-            "filter" => "Test",
-            "strict" => true,
-            "options" => ["expected" => "AAA"],
-            "remove" => false
-        ];
-        $fieldB = [
-            "filter" => "Test",
-            "strict" => true,
-            "options" => ["expected" => "AAA"],
-            "remove" => ["BBB","AAA"]
-        ];
-        $fieldC = [
-            "filter" => "Test",
-            "strict" => true,
-            "options" => ["expected" => "AAA"],
-            "remove" => ["CCC","DDD"]
-        ];
-
-        // Valid test w/o remove
-        $this->assertValid(
-            ["properties" => ["one" => $fieldA]],
-            ["one" => "AAA"],
-            ["one" => "AAA"]
-        );
-
-        // Valid test with matching remove
-        $this->assertValid(
-            ["properties" => ["one" => $fieldB]],
-            ["one" => "AAA"],
-            []
-        );
-
-        // Valid test with non-matching remove
-        $this->assertValid(
-            ["properties" => ["one" => $fieldC]],
-            ["one" => "AAA"],
-            ["one" => "AAA"]
-        );
-    }
-
     public function testValidateArrayMultiple(){
         $fieldA = [
             "filter" => "Test",

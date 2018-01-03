@@ -2,12 +2,10 @@
 
 namespace Topolis\Validator\Schema\Validators;
 
-use Topolis\FunctionLibrary\Collection;
 use Topolis\Validator\Schema\Conditional;
 use Topolis\Validator\Schema\INode;
 use Topolis\Validator\Schema\IValidator;
 use Topolis\Validator\Schema\Node\Object;
-use Topolis\Validator\Schema\Node\Value;
 use Topolis\Validator\Schema\NodeFactory;
 use Topolis\Validator\StatusManager;
 use Topolis\Validator\ValidatorException;
@@ -134,18 +132,15 @@ class ObjectValidator implements IValidator  {
 
                 // Property exists
                 else {
-                    $value = Collection::get($values, $key, $subnode->getDefault());
+                    $value = isset($values[$key]) ? $values[$key] : $subnode->getDefault();
 
                     $value = $this->propertyValidator[$key]->validate($value, $this->data);
 
-                    // Empty value as specified in "remove" - We always treat "" or null as empty
-                    $remove = method_exists($subnode, "getRemove") && is_array($subnode->getRemove()) && in_array($value, $subnode->getRemove());
-
-                    if ($subnode->getRequired() && ($value == null || $remove))
+                    if ($subnode->getRequired() && $value == null)
                         throw new ValidatorException("Required field is empty");
 
-                    if(!$remove)
-                        Collection::set($valid, $key, $value);
+                    // FIXME: the "Remove empty properties" feature has been removed and needs to be reimplemented in a cleaner way if realy needed
+                    $valid[$key] = $value;
                 }
 
             } catch (ValidatorException $e) {

@@ -56,7 +56,7 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase {
                 $debug = "Messages:\n";
                 if($messages) {
                     foreach($messages as $message)
-                        $debug.= "  - ".$message["message"]." - at ".implode(".",$message["path"])."\n";
+                        $debug.= "  - ".$message["message"]." - at '".implode(".",$message["path"])."' with value ".var_export($message["value"],true)."\n";
                 }
 
                 $this->assertEquals($expectedData, $result, "Invalid result for schema '".$test["schema"]."' and data '".$input."'\n".$debug);

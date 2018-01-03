@@ -20,7 +20,6 @@ tests:
       input:
           - ["api-find.valid.in.json", 'api-find.valid.out.json', 1]
           - ["api-find.sanitized.in.json", 'api-find.sanitized.out.json', -2]
-          - ["api-find.failed.in.json", null, -11]
 
     - schema: car.yml
       input:

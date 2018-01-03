@@ -2,7 +2,6 @@
 
 namespace Topolis\Validator\Schema\Validators;
 
-use Topolis\FunctionLibrary\Collection;
 use Topolis\Validator\Schema\Conditional;
 use Topolis\Validator\Schema\INode;
 use Topolis\Validator\Schema\IValidator;
@@ -75,17 +74,13 @@ class ListingValidator implements IValidator {
                 return null;
             }
 
-            $value = Collection::get($values, $key, $node->getValue()->getDefault());
+            $value = $value !== null ? $value : $node->getValue()->getDefault();
             $value = $this->valueValidator->validate($value, $this->data);
 
-            // Empty value as specified in "remove" - We always treat "" or null as empty
-            $remove = is_array($node->getValue()->getRemove()) && in_array($value, $node->getValue()->getRemove());
-
-            if ($node->getValue()->getRequired() && ($value == null || $remove))
+            if ($node->getValue()->getRequired() && $value == null)
                 throw new ValidatorException("Required field is missing");
 
-            if(!$remove)
-                $valid[$key] = $value;
+            $valid[$key] = $value;
 
             $this->statusManager->exitPath();
         }

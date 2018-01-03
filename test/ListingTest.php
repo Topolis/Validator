@@ -69,7 +69,6 @@ class ListingTest extends \PHPUnit_Framework_TestCase {
             'options' => [],
             'default' => null,
             'required' => false,
-            'remove' => false,
             'strict' => false
         ], $listing->getKey()->export());
 
@@ -78,7 +77,6 @@ class ListingTest extends \PHPUnit_Framework_TestCase {
             'options' => [],
             'default' => null,
             'required' => false,
-            'remove' => false,
             'strict' => false
         ], $listing->getValue()->export());
 
@@ -124,7 +122,6 @@ class ListingTest extends \PHPUnit_Framework_TestCase {
                     'options' => [],
                     'default' => null,
                     'required' => false,
-                    'remove' => false,
                     'strict' => false
                 ],
                 "value" => [
@@ -132,7 +129,6 @@ class ListingTest extends \PHPUnit_Framework_TestCase {
                     'options' => [],
                     'default' => null,
                     'required' => false,
-                    'remove' => false,
                     'strict' => false
                 ],
                 "min" => 123,

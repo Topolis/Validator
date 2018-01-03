@@ -1,15 +1,9 @@
 {
-    "limit": 10,
+    "csrf": 1,
     "offset": 0,
+    "limit": 10,
+    "search": "",
     "order": {
-        "field_1": true,
-        "field+2": false
-    },
-    "filters": {
-        "field_1": "value_1.1",
-        "field+2": "value-2_2"
-    },
-    "search": "search string to be found",
-    "csrf": "helloworldformtexthtingtoken1"
-
+        "profile.firstname": true
+    }
 }

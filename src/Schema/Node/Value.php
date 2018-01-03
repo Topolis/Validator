@@ -16,7 +16,6 @@ class Value implements INode {
     protected $options = [];
     protected $default = null;
     protected $required = false;
-    protected $remove = ['', null];
     protected $strict = false;
     protected $conditionals = [];
 
@@ -50,7 +49,6 @@ class Value implements INode {
                 "options" => [],
                 "default" => null,
                 "required" => false,
-                "remove" => false,
                 "strict" => false,
                 "conditionals" => []
             ];
@@ -59,7 +57,6 @@ class Value implements INode {
         $this->options = $data["options"];
         $this->default = $data["default"];
         $this->required = $data["required"];
-        $this->remove = $data["remove"];
         $this->strict = $data["strict"];
 
         foreach($data["conditionals"] as $conditional){
@@ -76,7 +73,6 @@ class Value implements INode {
             "options" => $this->getOptions(),
             "default" => $this->getDefault(),
             "required" => $this->getRequired(),
-            "remove" => $this->getRemove(),
             "strict" => $this->getStrict()
         ];
 
@@ -117,13 +113,6 @@ class Value implements INode {
     }
 
     /**
-     * @return bool|array
-     */
-    public function getRemove(){
-        return $this->remove;
-    }
-
-    /**
      * @return bool
      */
     public function getStrict(){
@@ -146,7 +135,6 @@ class Value implements INode {
         $this->options = array_merge($this->options, $schema->getOptions());
         $this->default = $schema->getDefault() ? $schema->getDefault() : $this->default;
         $this->required = $schema->getRequired() ? $schema->getRequired() : $this->required;
-        $this->remove = $schema->getRemove() ? $schema->getRemove() : $this->remove;
     }
 
 }

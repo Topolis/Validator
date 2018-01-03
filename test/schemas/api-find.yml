@@ -14,7 +14,7 @@ properties:
         listing:
             key:
                 filter: PlainExt
-                options: {characterset: 1, characters: "+_"}
+                options: {characterset: 1, characters: ".-_"}
             value:
                 filter: Boolean
 
@@ -22,11 +22,10 @@ properties:
         listing:
             key:
                 filter: PlainExt
-                options: {characterset: 1, characters: "+_-"}
-                strict: true
+                options: {characterset: 1, characters: ".-_"}
             value:
                 filter: PlainExt
-                options: {characterset: 13, characters: "+.\\-_"}
+                options: {characterset: 13, characters: ".-_"}
 
     search:
         filter: PlainExt
