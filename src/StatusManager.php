@@ -45,7 +45,7 @@ class StatusManager {
         $this->path = $path;
     }
     public function enterPath($path){
-        $this->path[] = $path;
+        array_push($this->path, $path);
     }
     public function exitPath(){
         array_pop($this->path);

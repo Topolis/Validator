@@ -68,19 +68,29 @@ class ListingValidator implements IValidator {
 
             $this->statusManager->enterPath($key);
 
-            $key = $this->keyValidator->validate($key, $this->data);
-            if(!$key){
-                $this->statusManager->addMessage(StatusManager::INVALID, "Invalid - Invalid listing key", $key, $this->node);
-                return null;
+            try {
+
+                $key = $this->keyValidator->validate($key, $this->data);
+                if($key === null || !is_scalar($key))
+                    throw new ValidatorException("Invalid - Invalid listing key");
+
+                $value = $value !== null ? $value : $node->getValue()->getDefault();
+                $value = $this->valueValidator->validate($value, $this->data);
+
+                if ($node->getValue()->getRequired() && $value == null)
+                    throw new ValidatorException("Invalid - Required field is missing");
+
+                $valid[$key] = $value;
+
+            } catch (ValidatorException $e) {
+                // Error reporting
+                $this->statusManager->addMessage(
+                    StatusManager::INVALID,
+                    $e->getMessage(),
+                    $key,
+                    $this->node
+                );
             }
-
-            $value = $value !== null ? $value : $node->getValue()->getDefault();
-            $value = $this->valueValidator->validate($value, $this->data);
-
-            if ($node->getValue()->getRequired() && $value == null)
-                throw new ValidatorException("Required field is missing");
-
-            $valid[$key] = $value;
 
             $this->statusManager->exitPath();
         }

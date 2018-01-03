@@ -125,9 +125,7 @@ class ObjectValidator implements IValidator  {
                 // Propery does not exist and no default specified
                 if(!isset($values[$key]) && $subnode->getDefault() == null){
                     if ($subnode->getRequired())
-                        throw new ValidatorException("Required property is missing");
-
-                    continue;
+                        throw new ValidatorException("Invalid - Required property is missing");
                 }
 
                 // Property exists
@@ -137,7 +135,7 @@ class ObjectValidator implements IValidator  {
                     $value = $this->propertyValidator[$key]->validate($value, $this->data);
 
                     if ($subnode->getRequired() && $value == null)
-                        throw new ValidatorException("Required field is empty");
+                        throw new ValidatorException("Invalid - Required field is empty");
 
                     // FIXME: the "Remove empty properties" feature has been removed and needs to be reimplemented in a cleaner way if realy needed
                     $valid[$key] = $value;
