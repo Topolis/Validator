@@ -41,7 +41,6 @@ class ConditionalTest extends \PHPUnit_Framework_TestCase {
             "default" => null,
             "required" => false,
             'strict' => false,
-            'type' => "single",
         ], $conditional->export());
     }
 
@@ -75,7 +74,6 @@ class ConditionalTest extends \PHPUnit_Framework_TestCase {
             "default" => null,
             "required" => true,
             'strict' => true,
-            'type' => "single",
         ], $conditional->export());
     }
 
@@ -104,7 +102,6 @@ class ConditionalTest extends \PHPUnit_Framework_TestCase {
             "default" => null,
             "required" => true,
             'strict' => false,
-            'type' => "single",
         ], $conditional->export());
     }
 

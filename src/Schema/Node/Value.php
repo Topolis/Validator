@@ -18,10 +18,7 @@ class Value implements INode {
     protected $default = null;
     protected $required = false;
     protected $strict = false;
-    protected $type = self::TYPE_DEFAULT;
     protected $conditionals = [];
-
-    const TYPE_DEFAULT = Filter::TYPE_SINGLE;
 
     const FILTER_DEFAULT = "Passthrough";
 
@@ -54,16 +51,18 @@ class Value implements INode {
                 "default" => null,
                 "required" => false,
                 "strict" => false,
-                "type" => self::TYPE_DEFAULT,
                 "conditionals" => []
             ];
+
+        // The Topolis/Filter libraray defines the type of values per default as "any". This allows single values and arrays/trees of values.
+        // The Validator is more restrictive and changes this behaviour to a default of "single".
+        $data["options"] += ["type" => Filter::TYPE_SINGLE];
 
         $this->filter = $data["filter"];
         $this->options = $data["options"];
         $this->default = $data["default"];
         $this->required = $data["required"];
         $this->strict = $data["strict"];
-        $this->type = $data["type"];
 
         foreach($data["conditionals"] as $conditional){
             $this->conditionals[] = new Conditional($conditional, $data, $this->factory);
@@ -79,9 +78,13 @@ class Value implements INode {
             "options" => $this->getOptions(),
             "default" => $this->getDefault(),
             "required" => $this->getRequired(),
-            "strict" => $this->getStrict(),
-            "type" => $this->getType(),
+            "strict" => $this->getStrict()
         ];
+
+        // Removing the default value of "single" from filter options
+        // See @import()
+        if($export["options"]["type"] === Filter::TYPE_SINGLE)
+            unset($export["options"]["type"]);
 
         foreach($this->conditionals as $conditional)
             $export["conditionals"][] = $conditional->export();
@@ -127,13 +130,6 @@ class Value implements INode {
     }
 
     /**
-     * @return string
-     */
-    public function getType(){
-        return $this->type ? $this->type : self::TYPE_DEFAULT;
-    }
-
-    /**
      * @return Conditional[]
      */
     public function getConditionals(){
@@ -146,10 +142,9 @@ class Value implements INode {
     public function merge(INode $schema){
         /* @var Value $schema */
         $this->filter = $schema->getFilter() !== self::FILTER_DEFAULT ? $schema->getFilter() : $this->filter;
-        $this->options = array_merge($this->options, $schema->getOptions());
+        $this->options = array_merge($this->getOptions(), $schema->getOptions());
         $this->default = $schema->getDefault() ? $schema->getDefault() : $this->default;
         $this->required = $schema->getRequired() ? $schema->getRequired() : $this->required;
-        $this->type = $schema->getType() ? $schema->getType() : $this->type;
     }
 
 }

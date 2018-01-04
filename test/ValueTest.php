@@ -31,7 +31,6 @@ class ValueTest extends \PHPUnit_Framework_TestCase {
             "default" => true,
             "required" => false,
             "strict" => false,
-            'type' => "single",
         ], $value->export());
     }
 
@@ -47,13 +46,13 @@ class ValueTest extends \PHPUnit_Framework_TestCase {
 
     public function testGetOptions(){
         // Specified
-        $options = ["two", 6, "C" => "D"];
+        $options = ["two", 6, "C" => "D", "type" => "array"];
         $value = new Value([ "options" => $options ], new NodeFactory());
         $this->assertEquals($options, $value->getOptions());
 
         // Nothing specified
         $value = new Value([], new NodeFactory());
-        $this->assertEquals([], $value->getOptions());
+        $this->assertEquals(["type" => "single"], $value->getOptions()); // Dont forget the overridden default type!
     }
 
     public function testGetDefault(){
@@ -102,7 +101,6 @@ class ValueTest extends \PHPUnit_Framework_TestCase {
             "default" => true,
             "required" => true,
             "strict" => false,
-            'type' => "single",
         ], $valueA->export());
     }
 
