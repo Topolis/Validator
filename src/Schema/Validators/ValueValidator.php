@@ -2,7 +2,10 @@
 
 namespace Topolis\Validator\Schema\Validators;
 
-use Topolis\Filter\Filter;
+// The Topolis/Filter libraray defines the type of values per default as "any". This allows single values and arrays/trees of values.
+// The Validator is more restrictive and changes this behaviour to a default of "single".
+use Topolis\Validator\Utilities\Filter;
+
 use Topolis\Validator\Schema\Conditional;
 use Topolis\Validator\Schema\INode;
 use Topolis\Validator\Schema\IValidator;

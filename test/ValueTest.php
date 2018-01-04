@@ -52,7 +52,7 @@ class ValueTest extends \PHPUnit_Framework_TestCase {
 
         // Nothing specified
         $value = new Value([], new NodeFactory());
-        $this->assertEquals(["type" => "single"], $value->getOptions()); // Dont forget the overridden default type!
+        $this->assertEquals([], $value->getOptions()); // Dont forget the overridden default type!
     }
 
     public function testGetDefault(){

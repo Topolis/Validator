@@ -2,7 +2,6 @@
 
 namespace Topolis\Validator\Schema\Node;
 
-use Topolis\Filter\Filter;
 use Topolis\Validator\Schema\Conditional;
 use Topolis\Validator\Schema\INode;
 use Topolis\Validator\Schema\NodeFactory;
@@ -54,10 +53,6 @@ class Value implements INode {
                 "conditionals" => []
             ];
 
-        // The Topolis/Filter libraray defines the type of values per default as "any". This allows single values and arrays/trees of values.
-        // The Validator is more restrictive and changes this behaviour to a default of "single".
-        $data["options"] += ["type" => Filter::TYPE_SINGLE];
-
         $this->filter = $data["filter"];
         $this->options = $data["options"];
         $this->default = $data["default"];
@@ -80,11 +75,6 @@ class Value implements INode {
             "required" => $this->getRequired(),
             "strict" => $this->getStrict()
         ];
-
-        // Removing the default value of "single" from filter options
-        // See @import()
-        if($export["options"]["type"] === Filter::TYPE_SINGLE)
-            unset($export["options"]["type"]);
 
         foreach($this->conditionals as $conditional)
             $export["conditionals"][] = $conditional->export();
