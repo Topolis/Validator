@@ -69,7 +69,8 @@ class ListingTest extends \PHPUnit_Framework_TestCase {
             'options' => [],
             'default' => null,
             'required' => false,
-            'strict' => false
+            'strict' => false,
+            'type' => "single",
         ], $listing->getKey()->export());
 
         $this->assertEquals([
@@ -77,7 +78,8 @@ class ListingTest extends \PHPUnit_Framework_TestCase {
             'options' => [],
             'default' => null,
             'required' => false,
-            'strict' => false
+            'strict' => false,
+            'type' => "single",
         ], $listing->getValue()->export());
 
     }
@@ -122,14 +124,16 @@ class ListingTest extends \PHPUnit_Framework_TestCase {
                     'options' => [],
                     'default' => null,
                     'required' => false,
-                    'strict' => false
+                    'strict' => false,
+                    'type' => "single",
                 ],
                 "value" => [
                     "filter" => "keyfilterB",
                     'options' => [],
                     'default' => null,
                     'required' => false,
-                    'strict' => false
+                    'strict' => false,
+                    'type' => "single",
                 ],
                 "min" => 123,
                 "max" => 456,

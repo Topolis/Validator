@@ -30,7 +30,8 @@ class ValueTest extends \PHPUnit_Framework_TestCase {
             "options" => ["A1", "A2", "A3" => "Athree"],
             "default" => true,
             "required" => false,
-            "strict" => false
+            "strict" => false,
+            'type' => "single",
         ], $value->export());
     }
 
@@ -100,7 +101,8 @@ class ValueTest extends \PHPUnit_Framework_TestCase {
             "options" => ["A1", "A2", "A3" => "Athree", "B1", "B2", "B3" => "Bthree"],
             "default" => true,
             "required" => true,
-            "strict" => false
+            "strict" => false,
+            'type' => "single",
         ], $valueA->export());
     }
 

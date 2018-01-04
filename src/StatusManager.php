@@ -28,7 +28,12 @@ class StatusManager {
 
     const VALID     = 1;
 
-    protected static $levels = [self::ERROR, self::INVALID, self::SANITIZED, self::INFO];
+    protected static $levels = [
+        self::ERROR => "error",
+        self::INVALID => "invalid",
+        self::SANITIZED => "sanitized",
+        self::INFO => "info"
+    ];
 
     protected $messages = [];
     protected $status = self::VALID;
@@ -53,7 +58,7 @@ class StatusManager {
 
     public function addMessage($level, $message, $value, $definition){
 
-        if(!in_array($level, self::$levels))
+        if(!in_array($level, array_keys(self::$levels)))
             throw new Exception("Invalid error level '".$level."' sent");
 
         $message = [
@@ -85,6 +90,14 @@ class StatusManager {
         $this->messages = [];
         $this->status = self::VALID;
         $this->path = [];
+    }
+
+    public static function levelToString($level) {
+
+        if(!in_array($level, array_keys(self::$levels)))
+            throw new Exception("Invalid error level '".$level."' sent");
+
+        return self::$levels[$level];
     }
 
 }

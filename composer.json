@@ -19,7 +19,7 @@
     ],
     "require": {
         "topolis/function-library": "*",
-        "topolis/filter": "^2.0",
+        "topolis/filter": "*",
         "symfony/yaml": "*"
     },
     "require-dev": {

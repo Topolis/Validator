@@ -1,0 +1,17 @@
+properties:
+    tree:
+        filter: Passthrough
+        options: {append: 1, type: tree}
+
+
+    array:
+        filter: Passthrough
+        options: {append: 2, type: array}
+
+    single:
+        filter: Passthrough
+        options: {append: 3, type: single}
+
+    any:
+        filter: Passthrough
+        options: {append: 4, type: any}

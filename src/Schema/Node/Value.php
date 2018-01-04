@@ -2,6 +2,7 @@
 
 namespace Topolis\Validator\Schema\Node;
 
+use Topolis\Filter\Filter;
 use Topolis\Validator\Schema\Conditional;
 use Topolis\Validator\Schema\INode;
 use Topolis\Validator\Schema\NodeFactory;
@@ -17,7 +18,10 @@ class Value implements INode {
     protected $default = null;
     protected $required = false;
     protected $strict = false;
+    protected $type = self::TYPE_DEFAULT;
     protected $conditionals = [];
+
+    const TYPE_DEFAULT = Filter::TYPE_SINGLE;
 
     const FILTER_DEFAULT = "Passthrough";
 
@@ -50,6 +54,7 @@ class Value implements INode {
                 "default" => null,
                 "required" => false,
                 "strict" => false,
+                "type" => self::TYPE_DEFAULT,
                 "conditionals" => []
             ];
 
@@ -58,6 +63,7 @@ class Value implements INode {
         $this->default = $data["default"];
         $this->required = $data["required"];
         $this->strict = $data["strict"];
+        $this->type = $data["type"];
 
         foreach($data["conditionals"] as $conditional){
             $this->conditionals[] = new Conditional($conditional, $data, $this->factory);
@@ -73,7 +79,8 @@ class Value implements INode {
             "options" => $this->getOptions(),
             "default" => $this->getDefault(),
             "required" => $this->getRequired(),
-            "strict" => $this->getStrict()
+            "strict" => $this->getStrict(),
+            "type" => $this->getType(),
         ];
 
         foreach($this->conditionals as $conditional)
@@ -120,6 +127,13 @@ class Value implements INode {
     }
 
     /**
+     * @return string
+     */
+    public function getType(){
+        return $this->type ? $this->type : self::TYPE_DEFAULT;
+    }
+
+    /**
      * @return Conditional[]
      */
     public function getConditionals(){
@@ -135,6 +149,7 @@ class Value implements INode {
         $this->options = array_merge($this->options, $schema->getOptions());
         $this->default = $schema->getDefault() ? $schema->getDefault() : $this->default;
         $this->required = $schema->getRequired() ? $schema->getRequired() : $this->required;
+        $this->type = $schema->getType() ? $schema->getType() : $this->type;
     }
 
 }

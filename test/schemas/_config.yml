@@ -29,3 +29,9 @@ tests:
       input:
           - ["error.number.in.json", "error.number.in.json", 1]
 
+    - schema: types.yml
+      input:
+          - ["types.in.json", "types.out.json", -2]
+          - ["types.in-f1.json", false, -11]
+          - ["types.in-f2.json", false, -11]
+          - ["types.in-f3.json", false, -11]

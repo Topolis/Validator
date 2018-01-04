@@ -6,5 +6,5 @@ A complex validator that applies a yaml based schema file to a multi dimensional
 - reference definitions in other files
 
 ## Bugs
-- definition wrong in StatusManager
+- Definition wrong in StatusManager (Can't reproduce. Where?)
 - Auto incremental indexes in listings

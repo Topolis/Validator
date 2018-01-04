@@ -40,7 +40,8 @@ class ConditionalTest extends \PHPUnit_Framework_TestCase {
             'options' => ["A" => "B"],
             "default" => null,
             "required" => false,
-            'strict' => false
+            'strict' => false,
+            'type' => "single",
         ], $conditional->export());
     }
 
@@ -73,7 +74,8 @@ class ConditionalTest extends \PHPUnit_Framework_TestCase {
             'options' => ["A1", "A2", "A3" => "Athree", "B1" => "B"],
             "default" => null,
             "required" => true,
-            'strict' => true
+            'strict' => true,
+            'type' => "single",
         ], $conditional->export());
     }
 
@@ -101,7 +103,8 @@ class ConditionalTest extends \PHPUnit_Framework_TestCase {
             'options' => ["A1", "A2", "A3" => "Athree"],
             "default" => null,
             "required" => true,
-            'strict' => false
+            'strict' => false,
+            'type' => "single",
         ], $conditional->export());
     }
 
