@@ -1,6 +1,6 @@
 <?php
 
-namespace Topolis\Validator\Utilities;
+namespace Topolis\Validator\Overrides;
 
 /**
  * Class Filter
