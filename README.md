@@ -4,8 +4,8 @@ A complex validator that applies a yaml based schema file to a multi dimensional
 ## Syntax
 A schema is a hirarchical Yaml file. Each level, starting from the root of the file contains one of 3 different constructs.
 
-### Object
-An object is a list of named properties. Each property can then contain other constructs.
+### Properties
+Properties is an object with a list of named properties. Each property can then contain other constructs.
 The Yaml representation of an object construct is:
   
 #### Options

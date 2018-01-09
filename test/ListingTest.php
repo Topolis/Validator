@@ -18,7 +18,7 @@ class ListingTest extends \PHPUnit_Framework_TestCase {
     protected function setUp() {
         $this->factory = new NodeFactory();
         $this->factory->registerClass(Listing::class);
-        $this->factory->registerClass(Object::class);
+        $this->factory->registerClass(Properties::class);
         $this->factory->registerClass(Value::class);
     }
 

@@ -9,7 +9,7 @@
 namespace Topolis\Validator\Schema;
 
 use Topolis\Validator\Schema\Node\Listing;
-use Topolis\Validator\Schema\Node\Object;
+use Topolis\Validator\Schema\Node\Properties;
 use Topolis\Validator\Schema\Node\Value;
 
 class ConditionalTest extends \PHPUnit_Framework_TestCase {
@@ -20,7 +20,7 @@ class ConditionalTest extends \PHPUnit_Framework_TestCase {
     protected function setUp() {
         $this->factory = new NodeFactory();
         $this->factory->registerClass(Listing::class);
-        $this->factory->registerClass(Object::class);
+        $this->factory->registerClass(Properties::class);
         $this->factory->registerClass(Value::class);
     }
 

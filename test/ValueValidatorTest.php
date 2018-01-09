@@ -10,7 +10,7 @@ namespace Topolis\Validator\Schema\Validators;
 
 
 use Topolis\Validator\Schema\Node\Listing;
-use Topolis\Validator\Schema\Node\Object;
+use Topolis\Validator\Schema\Node\Properties;
 use Topolis\Validator\Schema\Node\Value;
 use Topolis\Validator\Schema\NodeFactory;
 use Topolis\Validator\StatusManager;
@@ -23,7 +23,7 @@ class ValueValidatorTest extends \PHPUnit_Framework_TestCase {
     protected function setUp() {
         $this->factory = new NodeFactory();
         $this->factory->registerClass(Listing::class);
-        $this->factory->registerClass(Object::class);
+        $this->factory->registerClass(Properties::class);
         $this->factory->registerClass(Value::class);
     }
 

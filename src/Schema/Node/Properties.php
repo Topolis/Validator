@@ -6,9 +6,9 @@ use Exception;
 use Topolis\Validator\Schema\Conditional;
 use Topolis\Validator\Schema\INode;
 use Topolis\Validator\Schema\NodeFactory;
-use Topolis\Validator\Schema\Validators\ObjectValidator;
+use Topolis\Validator\Schema\Validators\PropertiesValidator;
 
-class Object implements INode {
+class Properties implements INode {
 
     public $name;
 
@@ -50,7 +50,7 @@ class Object implements INode {
     }
 
     public static function validator() {
-        return ObjectValidator::class;
+        return PropertiesValidator::class;
     }
 
     /**

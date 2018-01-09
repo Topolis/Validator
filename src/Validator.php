@@ -15,7 +15,7 @@ use Exception;
 use Topolis\Validator\Schema\INode;
 use Topolis\Validator\Schema\IValidator;
 use Topolis\Validator\Schema\Node\Listing;
-use Topolis\Validator\Schema\Node\Object;
+use Topolis\Validator\Schema\Node\Properties;
 use Topolis\Validator\Schema\Node\Value;
 use Topolis\Validator\Schema\NodeFactory;
 
@@ -64,7 +64,7 @@ class Validator {
 
             $this->factory = new NodeFactory();
             $this->factory->registerClass(Listing::class);
-            $this->factory->registerClass(Object::class);
+            $this->factory->registerClass(Properties::class);
             $this->factory->registerClass(Value::class);
 
             $this->schema = $this->factory->createNode($definition);

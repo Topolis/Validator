@@ -1,0 +1,345 @@
+# CONTENT
+#
+# This is the main schema for all types of content object!
+# Version 2 - 2017-12-20
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A list of default types for use in this schema
+_types:
+
+    # --- Types -----------------------------------------------------
+
+    # unformatted text
+    simpletext: &simpletext
+        filter: PlainExt
+        options: {characterset: 15, characters: "'\"&#/;"}
+    # Simple HTML
+    simplehtml: &simplehtml
+        filter: Strip
+        options: {allowable_tags: "<a><i><b><em><strong><br><br/>"}
+    freehtml: &freehtml
+        filter: Strip
+        options: {allowable_tags: "<a><i><b><em><strong><br><br/><blockquote><span><div><p><iframe><ul><ol><li>"}
+    # datetime values
+    datetime: &datetime
+        filter: DateTime
+        options: {format: "c"}
+    # custom values array
+    custom: &custom
+        listing:
+            key:
+                filter: PlainExt
+                options: {characterset: 1, characters: "._-"}
+            value:
+                filter: PlainExt
+                options: {characterset: 15, characters: "&\"'#/"}
+
+    # --- The image and media type and it's components ---------------
+
+    _internals:
+        # ! internal type for use in media and image objects. Do not se directly
+        _imageproperties: &imageproperties
+            title:
+                <<: *simpletext
+            description:
+                <<: *simpletext
+            copyright:
+                <<: *simpletext
+                required: true
+            alt:
+                <<: *simpletext
+                default: false
+            custom:
+                <<: *custom
+
+        # ! internal type for use in media and image objects. Do not se directly
+        _imagevariants: &imagevariants
+            listing:
+                min: 1
+                max: 25
+                key:
+                    filter: Plain
+                value:
+                    properties:
+                        url:
+                            filter: Url
+                            options: {type: absolute}
+                            required: true
+
+                        width:
+                            filter: Number
+                            options: {min: 100, max: 10000, decimals: 0, round: false, adjust: false}
+                            required: true
+
+                        height:
+                            filter: Number
+                            options: {min: 100, max: 10000, decimals: 0, round: false, adjust: false}
+                            required: true
+
+                        aspect:
+                            filter: Number
+                            options: {min: 0.1, max: 10, decimals: 3, round: round, adjust: false}
+                            required: true
+                        custom:
+                            <<: *custom
+
+    # image object
+    image: &image
+        properties:
+            <<: *imageproperties
+            type:
+                filter: Enum
+                options: {values: [image]}
+            image: *imagevariants
+
+
+    # --- Content sections -----------------------------------------------------
+    section: &section
+        properties:
+            type:
+                filter: Enum
+                options: {values: [image, gallery, text, headline, list, aside, facebook-video, giphy, instagram-post, pinterest-post, twitter-tweet, youtube-video, brightcove-video]}
+                required: true
+            custom: *custom
+
+        conditionals:
+
+            - condition: type == image
+              properties:
+                  <<: *imageproperties
+                  image:
+                      <<: *imagevariants
+                      required: true
+
+            - condition: type == gallery
+              properties:
+                  title: *simpletext
+                  text: *simplehtml
+                  author: *simpletext
+                  items:
+                      listing:
+                          min: 1
+                          max: 100
+                          key:
+                              filter: Plain
+                          value: *image
+
+            - condition: type == text
+              properties:
+                  text:
+                      <<: *simplehtml
+                      required: true
+
+            - condition: type == headline
+              properties:
+                  level:
+                      filter: Number
+                      options: {min: 1, max: 6, round: false, decimals: 0, adjust: false}
+                      default: 1
+                  text:
+                      <<: *simplehtml
+                      required: true
+
+            - condition: type == list
+              properties:
+                  style:
+                      filter: Enum
+                      options: {values: [ordered, unordered]}
+                      default: unordered
+                  items:
+                      listing:
+                          min: 1
+                          max: 100
+                          key:
+                              filter: Plain
+                          value: *simplehtml
+
+            - condition: type == aside
+              properties:
+                  purpose:
+                      filter: Enum
+                      options: {values: [info, note, recipe, custom]}
+                      default: info
+                  text:
+                      <<: *simplehtml
+                      required: true
+
+            - condition: type in (apester, facebook-video, giphy, instagram-post, pinterest-post, twitter-tweet, youtube-video )
+              properties:
+                  id:
+                      <<: *simpletext
+                      required: true
+                  embed: *freehtml
+
+            - condition: type == twitter-tweet
+              properties:
+                  account:
+                      <<: *simpletext
+                      required: true
+                  status:
+                      <<: *simpletext
+                      required: true
+                  embed: *freehtml
+
+            - condition: type == brightcove-video
+              properties:
+                  id:
+                      <<: *simpletext
+                      required: true
+                  title: *simpletext
+                  text: *simplehtml
+                  copyright: *simpletext
+                  image:
+                      <<: *imagevariants
+
+            - condition: type == teaser
+              properties:
+                  title:
+                      <<: *simpletext
+                      required: true
+                  kicker: *simpletext
+                  abstract:
+                      <<: *simpletext
+                      required: true
+                  url:
+                      filter: Url
+                      options: {type: absolute}
+                      required: true
+                  media:
+                      <<: *image
+                      required: true
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # The Content schema
+    content: &content
+        properties:
+
+            type:
+                filter: Enum
+                options: {values: [article]}
+                required: true
+
+            # The system's core control attributes of any content object
+            control:
+                required: true
+
+                properties:
+                    uid:
+                        filter: PlainExt
+                        options: {characterset: 1, characters: "._-:"}
+                        required: true
+                        strict: true
+
+                    publishDate:
+                        <<: *datetime
+                        required: true
+
+                    unpublishDate:
+                        <<: *datetime
+                        default: false
+
+                    updateDate:
+                        <<: *datetime
+                        default: false
+
+                    comment:
+                        <<: *simpletext
+
+                    editor:
+                        filter: PlainExt
+                        options: {characterset: 1, characters: "\\._\\-@"}    # FIXME: remove slashes when PlainExt filter is fixed and does it itself
+                        required: true
+
+            meta:
+                required: true
+
+                properties:
+                    title:
+                        <<: *simpletext
+                        required: true
+
+                    description:
+                        <<: *simpletext
+                        required: true
+
+                    keywords:
+                        filter: PlainExt
+                        options: {characterset: 13, characters: " ,"}
+                        default: false
+
+                    tags:
+                        type: array    # FIXME: the value filter and the filter types do not yet support distinction between a value and an array of values!
+                        <<: *simpletext
+                        default: []
+
+                    category:
+                        <<: *simpletext
+                        required: true
+
+                    image:
+                        filter: Url    # FIXME: add absolute url check if feature is added to url filter
+                        required: true
+
+            teaser:
+                required: true
+
+                properties:
+                    title:
+                        <<: *simpletext
+                        required: true
+                    kicker:
+                        <<: *simpletext
+                        default: false
+                    abstract:
+                        <<: *simpletext
+                        default: false
+                    url:
+                        filter: Url
+                        required: true
+                    media:
+                        <<: *image
+                        required: true
+
+            content:
+                required: true
+
+                properties:
+                    title:
+                        <<: *simpletext
+                        required: true
+                    kicker:
+                        <<: *simpletext
+                        default: false
+                    abstract:
+                        <<: *simpletext
+                        default: false
+                    author:
+                        <<: *simpletext
+                        required: true
+                    sections:
+                        required: true
+                        listing:
+                            min: 1
+                            max: 100
+                            key:
+                                filter: Plain
+                            value: *section
+
+            custom: *custom
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+properties:
+    version:
+        required: true
+        filter: Test
+        options: {expected: "2.0"}
+    items:
+        required: true
+        listing:
+            min: 0
+            max: 100
+            key:
+                filter: Plain
+            value:
+                <<: *content

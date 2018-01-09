@@ -12,10 +12,10 @@ namespace Topolis\Validator\Schema\Validators;
 use Topolis\Validator\Schema\Node\Listing;
 use Topolis\Validator\Schema\NodeFactory;
 use Topolis\Validator\Schema\Node\Value;
-use Topolis\Validator\Schema\Node\Object;
+use Topolis\Validator\Schema\Node\Properties;
 use Topolis\Validator\StatusManager;
 
-class ObjectValidatorTest extends \PHPUnit_Framework_TestCase {
+class PropertiesValidatorTest extends \PHPUnit_Framework_TestCase {
 
     /* @var NodeFactory $factory */
     protected $factory;
@@ -23,14 +23,14 @@ class ObjectValidatorTest extends \PHPUnit_Framework_TestCase {
     protected function setUp() {
         $this->factory = new NodeFactory();
         $this->factory->registerClass(Listing::class);
-        $this->factory->registerClass(Object::class);
+        $this->factory->registerClass(Properties::class);
         $this->factory->registerClass(Value::class);
     }
 
     protected function assertValid($definition, $input, $expected, $data = []){
         $errorhandler = new StatusManager();
-        $definition = new Object($definition, $this->factory);
-        $validator = new ObjectValidator($definition, $errorhandler, $this->factory);
+        $definition = new Properties($definition, $this->factory);
+        $validator = new PropertiesValidator($definition, $errorhandler, $this->factory);
 
         $result = $validator->validate($input, $data);
 
@@ -45,8 +45,8 @@ class ObjectValidatorTest extends \PHPUnit_Framework_TestCase {
 
     protected function assertInvalid($definition, $input, $status, $data = []){
         $errorhandler = new StatusManager();
-        $definition = new Object($definition, $this->factory);
-        $validator = new ObjectValidator($definition, $errorhandler, $this->factory);
+        $definition = new Properties($definition, $this->factory);
+        $validator = new PropertiesValidator($definition, $errorhandler, $this->factory);
 
         $result = $validator->validate($input, $data);
 

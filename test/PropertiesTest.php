@@ -10,7 +10,7 @@ namespace Topolis\Validator\Schema\Node;
 
 use Topolis\Validator\Schema\NodeFactory;
 
-class ObjectTest extends \PHPUnit_Framework_TestCase {
+class PropertiesTest extends \PHPUnit_Framework_TestCase {
 
     /* @var NodeFactory $factory */
     protected $factory;
@@ -18,7 +18,7 @@ class ObjectTest extends \PHPUnit_Framework_TestCase {
     protected function setUp() {
         $this->factory = new NodeFactory();
         $this->factory->registerClass(Listing::class);
-        $this->factory->registerClass(Object::class);
+        $this->factory->registerClass(Properties::class);
         $this->factory->registerClass(Value::class);
     }
 
@@ -42,61 +42,61 @@ class ObjectTest extends \PHPUnit_Framework_TestCase {
     ];
 
     public function testImport() {
-        $object = new Object(self::$schemaMock, $this->factory);
+        $object = new Properties(self::$schemaMock, $this->factory);
 
-        $this->assertInstanceOf("Topolis\Validator\Schema\Node\Object", $object);
+        $this->assertInstanceOf("Topolis\Validator\Schema\Node\Properties", $object);
         $this->assertInstanceOf("Topolis\Validator\Schema\INode", $object);
     }
 
     public function testGetType(){
 
         // Constants
-        $this->assertNotEmpty(Object::TYPE_SINGLE);
-        $this->assertNotEmpty(Object::TYPE_MULTIPLE);
-        $this->assertNotEmpty(Object::TYPE_DEFAULT);
-        $this->assertNotEquals(Object::TYPE_SINGLE,Object::TYPE_MULTIPLE);
+        $this->assertNotEmpty(Properties::TYPE_SINGLE);
+        $this->assertNotEmpty(Properties::TYPE_MULTIPLE);
+        $this->assertNotEmpty(Properties::TYPE_DEFAULT);
+        $this->assertNotEquals(Properties::TYPE_SINGLE,Properties::TYPE_MULTIPLE);
 
         // Specified "single"
-        $object = new Object([ "type" => Object::TYPE_SINGLE ] + self::$schemaMock, $this->factory);
-        $this->assertEquals(Object::TYPE_SINGLE, $object->getType());
+        $object = new Properties([ "type" => Properties::TYPE_SINGLE ] + self::$schemaMock, $this->factory);
+        $this->assertEquals(Properties::TYPE_SINGLE, $object->getType());
 
         // Specified "multiple"
-        $object = new Object([ "type" => Object::TYPE_MULTIPLE ] + self::$schemaMock, $this->factory);
+        $object = new Properties([ "type" => Properties::TYPE_MULTIPLE ] + self::$schemaMock, $this->factory);
         $this->assertEquals("multiple", $object->getType());
 
         // Nothing specified
-        $object = new Object(self::$schemaMock, $this->factory);
-        $this->assertEquals(Object::TYPE_DEFAULT, $object->getType());
+        $object = new Properties(self::$schemaMock, $this->factory);
+        $this->assertEquals(Properties::TYPE_DEFAULT, $object->getType());
     }
 
     public function testGetIndex(){
         // Specified and multiple
         $options = ["one", 5, "A" => "B"];
         $filter = new Value([ "filter" => "SomeFilter", "options" => $options], $this->factory);
-        $object = new Object([ "filter" => "SomeFilter", "options" => $options, "type" => Object::TYPE_MULTIPLE ] + self::$schemaMock, $this->factory);
+        $object = new Properties([ "filter" => "SomeFilter", "options" => $options, "type" => Properties::TYPE_MULTIPLE ] + self::$schemaMock, $this->factory);
         $this->assertEquals($filter->export(), $object->getIndex()->export());
 
         // Specified and single
-        $object = new Object([ "filter" => "SomeFilter", "options" => $options, "type" => Object::TYPE_SINGLE ] + self::$schemaMock, $this->factory);
+        $object = new Properties([ "filter" => "SomeFilter", "options" => $options, "type" => Properties::TYPE_SINGLE ] + self::$schemaMock, $this->factory);
         $this->assertNull($object->getIndex());
 
         // Nothing specified
-        $object = new Object(self::$schemaMock, $this->factory);
+        $object = new Properties(self::$schemaMock, $this->factory);
         $this->assertNull($object->getIndex());
     }
 
     public function testGetProperties(){
-        $object = new Object(self::$schemaMock, $this->factory);
+        $object = new Properties(self::$schemaMock, $this->factory);
 
         $properties = $object->getProperties();
 
         $this->assertCount(2, $properties);
         $this->assertInstanceOf("Topolis\Validator\Schema\Node\Value", $properties["one"]);
-        $this->assertInstanceOf("Topolis\Validator\Schema\Node\Object", $properties["two"]);
+        $this->assertInstanceOf("Topolis\Validator\Schema\Node\Properties", $properties["two"]);
     }
 
     public function testGetConditionals(){
-        $object = new Object(self::$schemaMock, $this->factory);
+        $object = new Properties(self::$schemaMock, $this->factory);
 
         $conditionals = $object->getConditionals();
 
@@ -107,21 +107,21 @@ class ObjectTest extends \PHPUnit_Framework_TestCase {
 
     public function testGetDefault(){
         // Specified and single
-        $object = new Object([ "default" => "Something" ] + self::$schemaMock, $this->factory);
+        $object = new Properties([ "default" => "Something" ] + self::$schemaMock, $this->factory);
         $this->assertEquals("Something", $object->getDefault());
 
         // Nothing specified
-        $object = new Object(self::$schemaMock, $this->factory);
+        $object = new Properties(self::$schemaMock, $this->factory);
         $this->assertNull($object->getDefault());
     }
 
     public function testGetRequired(){
         // Specified and single
-        $object = new Object([ "required" => true ] + self::$schemaMock, $this->factory);
+        $object = new Properties([ "required" => true ] + self::$schemaMock, $this->factory);
         $this->assertTrue($object->getRequired());
 
         // Nothing specified
-        $object = new Object(self::$schemaMock, $this->factory);
+        $object = new Properties(self::$schemaMock, $this->factory);
         $this->assertFalse($object->getRequired());
     }
 
@@ -151,8 +151,8 @@ class ObjectTest extends \PHPUnit_Framework_TestCase {
             ]
         ];
 
-        $schemaA = new Object($schemaMockA, $this->factory);
-        $schemaB = new Object($schemaMockB, $this->factory);
+        $schemaA = new Properties($schemaMockA, $this->factory);
+        $schemaB = new Properties($schemaMockB, $this->factory);
         $schemaA->merge($schemaB);
 
         $this->assertEquals("multiple", $schemaA->getType());
@@ -162,10 +162,10 @@ class ObjectTest extends \PHPUnit_Framework_TestCase {
 
         $definitions = $schemaA->getProperties();
         $this->assertCount(4, $definitions);
-        $this->assertInstanceOf("Topolis\Validator\Schema\Node\Object", $definitions["one"]);
-        $this->assertInstanceOf("Topolis\Validator\Schema\Node\Object", $definitions["two"]);
+        $this->assertInstanceOf("Topolis\Validator\Schema\Node\Properties", $definitions["one"]);
+        $this->assertInstanceOf("Topolis\Validator\Schema\Node\Properties", $definitions["two"]);
         $this->assertInstanceOf("Topolis\Validator\Schema\Node\Value",  $definitions["four"]);
-        $this->assertInstanceOf("Topolis\Validator\Schema\Node\Object", $definitions["five"]);
+        $this->assertInstanceOf("Topolis\Validator\Schema\Node\Properties", $definitions["five"]);
 
         $conditionals = $schemaA->getConditionals();
         $this->assertCount(3, $conditionals);

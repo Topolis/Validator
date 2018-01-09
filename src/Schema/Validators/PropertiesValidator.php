@@ -5,12 +5,12 @@ namespace Topolis\Validator\Schema\Validators;
 use Topolis\Validator\Schema\Conditional;
 use Topolis\Validator\Schema\INode;
 use Topolis\Validator\Schema\IValidator;
-use Topolis\Validator\Schema\Node\Object;
+use Topolis\Validator\Schema\Node\Properties;
 use Topolis\Validator\Schema\NodeFactory;
 use Topolis\Validator\StatusManager;
 use Topolis\Validator\ValidatorException;
 
-class ObjectValidator implements IValidator  {
+class PropertiesValidator implements IValidator  {
 
     protected static $path = [];
 
@@ -28,7 +28,7 @@ class ObjectValidator implements IValidator  {
         $this->statusManager = $statusManager;
         $this->factory = $factory;
 
-        /* @var \Topolis\Validator\Schema\Node\Object $node */
+        /* @var \Topolis\Validator\Schema\Node\Properties $node */
         $this->node = $node;
     }
 
@@ -54,7 +54,7 @@ class ObjectValidator implements IValidator  {
         }
 
         // Index Validator for type multiple
-        if($node->getType() == Object::TYPE_MULTIPLE)
+        if($node->getType() == Properties::TYPE_MULTIPLE)
             $this->indexValidator = new ValueValidator($node->getIndex(), $this->statusManager, $this->factory);
 
         // Property validators
@@ -62,7 +62,7 @@ class ObjectValidator implements IValidator  {
             $this->propertyValidator[$key] = $this->factory->createValidator($subnode, $this->statusManager);
 
         // Type if multiple
-        if($node->getType() == Object::TYPE_MULTIPLE){
+        if($node->getType() == Properties::TYPE_MULTIPLE){
 
             $children = array();
             foreach($values as $idx => $child) {
@@ -81,7 +81,7 @@ class ObjectValidator implements IValidator  {
         }
 
         // Type is single
-        if($node->getType() == Object::TYPE_SINGLE) {
+        if($node->getType() == Properties::TYPE_SINGLE) {
             return $this->applyDefinitions($values, $node);
         }
 
@@ -97,7 +97,7 @@ class ObjectValidator implements IValidator  {
 
     /**
      * @param array $values
-     * @param \Topolis\Validator\Schema\Node\Object $node
+     * @param \Topolis\Validator\Schema\Node\Properties $node
      * @return array
      */
     protected function applyDefinitions($values, $node){
