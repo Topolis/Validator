@@ -32,14 +32,16 @@ class ConditionParser {
     /* @var StatusManager $statusManager */
     protected $StatusManager;
 
-    const LESS      = '<';
-    const GREATER   = '>';
-    const LESSEQ    = '<=';
-    const GREATEREQ = '>=';
-    const EQUALS    = '==';
-    const NOT       = '!=';
-    const IN        = 'in';
-    const NOTIN     = 'notin';
+    const LESS        = '<';
+    const GREATER     = '>';
+    const LESSEQ      = '<=';
+    const GREATEREQ   = '>=';
+    const EQUALS      = '==';
+    const NOT         = '!=';
+    const IN          = 'in';
+    const NOTIN       = 'notin';
+    const TYPE        = 'type';
+    const NOTTYPE     = 'nottype';
 
     const PATH_SEPARATOR = '/';
     const PATH_RELATIVE = '.';
@@ -60,7 +62,7 @@ class ConditionParser {
         if(!is_string($condition))
             throw new Exception("Invalid condition found - Not a string");
 
-        $match = preg_match('/^([a-z.\-\_'.preg_quote(self::PATH_RELATIVE.self::PATH_BACK.self::PATH_SEPARATOR, "/").']+) (<|>|==|<=|>=|!=|in|notin) (.+)$/i', $condition, $matches);
+        $match = preg_match('/^([a-z.\-\_'.preg_quote(self::PATH_RELATIVE.self::PATH_BACK.self::PATH_SEPARATOR, "/").']+) (<|>|==|<=|>=|!=|in|notin|type|nottype) (.+)$/i', $condition, $matches);
         if(!$match)
             throw new Exception("Invalid condition found");
 
@@ -185,6 +187,14 @@ class ConditionParser {
                 if(!is_array($value))
                     throw new Exception("Invalid condition found - ".$operator." operator requires array value");
                 return !in_array($data, $value);
+
+            case self::TYPE:
+                $type = gettype($data);
+                return $type === $value;
+
+            case self::NOTTYPE:
+                $type = gettype($data);
+                return $type !== $value;
 
             default:
                 throw new Exception("Invalid condition found - Bad operator (".$operator.")");

@@ -119,6 +119,19 @@ class ConditionParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue(  $parser->parse('/athree/bthree/ctwo != true', $data),  'athree/bthree/ctwo != true');
         $this->assertTrue(  $parser->parse('/awto == true', $data),                'awto == true');
         $this->assertFalse( $parser->parse('/awto == "true"', $data),              'awto == "true"');
+
+        // type checks
+        $this->assertTrue( $parser->parse('/athree type "array"', $data),        'awto == "true"');
+        $this->assertTrue( $parser->parse('/aone type "string"', $data),         'aone type "string"');
+        $this->assertTrue( $parser->parse('/awto type "integer"', $data),        'awto type "integer"');
+
+        $this->assertTrue( $parser->parse('/athree nottype "string"', $data),    'athree nottype "string"');
+        $this->assertTrue( $parser->parse('/athree nottype "integer"', $data),   'athree nottype "integer"');
+        $this->assertTrue( $parser->parse('/aone nottype "array"', $data),       'aone nottype "array"');
+        $this->assertTrue( $parser->parse('/aone nottype "integer"', $data),     'aone nottype "integer"');
+        $this->assertTrue( $parser->parse('/awto nottype "array"', $data),       'awto nottype "array"');
+        $this->assertTrue( $parser->parse('/awto nottype "string"', $data),      'awto nottype "string"');
+
     }
 
     /**
