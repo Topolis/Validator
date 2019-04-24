@@ -14,6 +14,7 @@ use Topolis\Validator\Schema\NodeFactory;
 use Topolis\Validator\Schema\Node\Value;
 use Topolis\Validator\Schema\Node\Properties;
 use Topolis\Validator\StatusManager;
+use Twig\Node\Node;
 
 class PropertiesValidatorTest extends \PHPUnit_Framework_TestCase {
 
@@ -296,6 +297,70 @@ class PropertiesValidatorTest extends \PHPUnit_Framework_TestCase {
             ["sam" => ["two" => "B2B"]],
             ["sam" => ["two" => "B2B"]]
         );
+
+    }
+
+    public function testRequired(){
+        $schema = [
+            "properties" => [
+                "testvalue" => [
+                    "filter" => "Passthrough",
+                    "options" => ["type" => "any"],
+                    "required" => true
+                ]
+            ]
+        ];
+
+        // string
+        $this->assertValid(
+            $schema,
+            ["testvalue" => "ok"],
+            ["testvalue" => "ok"]
+        );
+        $this->assertInvalid(
+            $schema,
+            ["testvalue" => ""],
+            StatusManager::INVALID
+        );
+        
+        // array
+        $this->assertValid(
+            $schema,
+            ["testvalue" => [1,2,3]],
+            ["testvalue" => [1,2,3]]
+        );
+        $this->assertInvalid(
+            $schema,
+            ["testvalue" => []],
+            StatusManager::INVALID
+        );
+
+        // boolean
+        $this->assertValid(
+            $schema,
+            ["testvalue" => false],
+            ["testvalue" => false]
+        );
+        $this->assertValid(
+            $schema,
+            ["testvalue" => true],
+            ["testvalue" => true]
+        );
+
+        // integer
+        $this->assertValid(
+            $schema,
+            ["testvalue" => 0],
+            ["testvalue" => 0]
+        );
+
+        // null
+        $this->assertInvalid(
+            $schema,
+            ["testvalue" => null],
+            StatusManager::INVALID
+        );
+
 
     }
 

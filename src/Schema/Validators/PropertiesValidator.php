@@ -125,19 +125,33 @@ class PropertiesValidator implements IValidator  {
             try {
 
                 // Propery does not exist and no default specified
-                if(!isset($values[$key]) && $subnode->getDefault() === null){
+                if(!is_array($values) || !array_key_exists($key,$values) && $subnode->getDefault() === null){
                     if ($subnode->getRequired())
                         throw new ValidatorException("Invalid - Required property is missing");
                 }
 
                 // Property exists
                 else {
-                    $value = isset($values[$key]) ? $values[$key] : $subnode->getDefault();
+                    $value = is_array($values) && array_key_exists($key,$values) ? $values[$key] : $subnode->getDefault();
 
                     $value = $this->propertyValidator[$key]->validate($value, $this->data);
 
-                    if ($subnode->getRequired() && $value === null)
-                        throw new ValidatorException("Invalid - Required field is empty");
+                    if($subnode->getRequired()){
+                        // Depending on the type of a variable, different criteria apply to check if something is empty or not
+                        switch(gettype($value)){
+                            case "string":
+                                $requiredError = $value === "";
+                                break;
+                            case "array":
+                                $requiredError = $value === [];
+                                break;
+                            default:
+                                $requiredError = $value === null;
+                        }
+
+                        if($requiredError)
+                            throw new ValidatorException("Invalid - Required field is empty");
+                    }
 
                     // FIXME: the "Remove empty properties" feature has been removed and needs to be reimplemented in a cleaner way if realy needed
                     $valid[$key] = $value;
