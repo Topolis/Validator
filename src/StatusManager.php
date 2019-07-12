@@ -58,8 +58,9 @@ class StatusManager {
 
     public function addMessage($level, $message, $value, $definition){
 
-        if(!in_array($level, array_keys(self::$levels)))
-            throw new Exception("Invalid error level '".$level."' sent");
+        // We now allow custom error codes!
+        //if(!in_array($level, array_keys(self::$levels)))
+        //    throw new Exception("Invalid error level '".$level."' sent");
 
         $message = [
             "level" => $level,

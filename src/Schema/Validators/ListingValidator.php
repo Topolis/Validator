@@ -11,14 +11,7 @@ use Topolis\Validator\Schema\NodeFactory;
 use Topolis\Validator\StatusManager;
 use Topolis\Validator\ValidatorException;
 
-class ListingValidator implements IValidator {
-
-    protected static $path = [];
-
-    /* @var Listing $definition */
-    protected $node;
-    /* @var StatusManager $definition */
-    protected $statusManager;
+class ListingValidator extends BaseValidator implements IValidator {
 
     /* @var Value $keyValidator */
     protected $keyValidator;
@@ -28,9 +21,7 @@ class ListingValidator implements IValidator {
     protected $data; // The full object to be validated. Needed for Conditionals
 
     public function __construct(INode $node, StatusManager $statusManager, NodeFactory $factory) {
-        $this->statusManager = $statusManager;
-        /* @var Listing $node */
-        $this->node = $node;
+        parent::__construct($node, $statusManager, $factory);
 
         $this->keyValidator = $factory->createValidator($node->getKey(), $this->statusManager);
         $this->valueValidator = $factory->createValidator($node->getValue(), $this->statusManager);
@@ -40,6 +31,7 @@ class ListingValidator implements IValidator {
      * @param $values
      * @param $data
      * @return mixed
+     * @throws \Exception
      */
     public function validate($values, $data = null){
 
@@ -59,8 +51,8 @@ class ListingValidator implements IValidator {
         }
 
         // Validate
-        if(!is_array($values)){
-            $this->statusManager->addMessage(StatusManager::INVALID, "Invalid - Invalid value found", $values, $this->node);
+        if(!\is_array($values)){
+            $this->addStatusMessage(StatusManager::INVALID, "Invalid - Invalid value found", $values);
             return null;
         }
 
@@ -84,11 +76,10 @@ class ListingValidator implements IValidator {
 
             } catch (ValidatorException $e) {
                 // Error reporting
-                $this->statusManager->addMessage(
+                $this->addStatusMessage(
                     StatusManager::INVALID,
                     $e->getMessage(),
-                    $key,
-                    $this->node
+                    $key
                 );
             }
 
@@ -96,12 +87,12 @@ class ListingValidator implements IValidator {
         }
 
         if( $node->getMin() !== false && count($valid) < $node->getMin() ) {
-            $this->statusManager->addMessage(StatusManager::INVALID, "Invalid - less than ".$node->getMin()." values in listing", $valid, $this->node);
+            $this->addStatusMessage(StatusManager::INVALID, "Invalid - less than ".$node->getMin()." values in listing", $valid);
             return null;
         }
 
         if( $node->getMax() !== false && count($valid) > $node->getMax() ) {
-            $this->statusManager->addMessage(StatusManager::INVALID, "Invalid - more than ".$node->getMax()." values in listing", $valid, $this->node);
+            $this->addStatusMessage(StatusManager::INVALID, "Invalid - more than ".$node->getMax()." values in listing", $valid);
             return null;
         }
 

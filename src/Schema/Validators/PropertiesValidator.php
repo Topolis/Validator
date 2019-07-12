@@ -10,32 +10,18 @@ use Topolis\Validator\Schema\NodeFactory;
 use Topolis\Validator\StatusManager;
 use Topolis\Validator\ValidatorException;
 
-class PropertiesValidator implements IValidator  {
-
-    protected static $path = [];
-
-    /* @var Object $node */
-    protected $node;
-    protected $statusManager;
-    protected $factory;
+class PropertiesValidator extends BaseValidator implements IValidator  {
 
     protected $indexValidator;
     protected $propertyValidator = [];
 
     protected $data; // The full object to be validated. Needed for Conditionals
 
-    public function __construct(INode $node, StatusManager $statusManager, NodeFactory $factory) {
-        $this->statusManager = $statusManager;
-        $this->factory = $factory;
-
-        /* @var \Topolis\Validator\Schema\Node\Properties $node */
-        $this->node = $node;
-    }
-
     /**
      * @param $values
      * @param $data
      * @return mixed
+     * @throws \Exception
      */
     public function validate($values, $data = null){
 
@@ -44,6 +30,7 @@ class PropertiesValidator implements IValidator  {
 
         $this->data =& $data;
 
+        /* @var Properties $node */
         $node = $this->node;
 
         // Apply conditionals
@@ -54,7 +41,7 @@ class PropertiesValidator implements IValidator  {
         }
 
         // Index Validator for type multiple
-        if($node->getType() == Properties::TYPE_MULTIPLE)
+        if($node->getType() === Properties::TYPE_MULTIPLE)
             $this->indexValidator = new ValueValidator($node->getIndex(), $this->statusManager, $this->factory);
 
         // Property validators
@@ -62,7 +49,7 @@ class PropertiesValidator implements IValidator  {
             $this->propertyValidator[$key] = $this->factory->createValidator($subnode, $this->statusManager);
 
         // Type if multiple
-        if($node->getType() == Properties::TYPE_MULTIPLE){
+        if($node->getType() === Properties::TYPE_MULTIPLE){
 
             $children = array();
             foreach($values as $idx => $child) {
@@ -71,7 +58,7 @@ class PropertiesValidator implements IValidator  {
 
                 $idx = $this->indexValidator->validate($idx, $this->data);
 
-                if($idx !== null && is_array($child)){
+                if($idx !== null && \is_array($child)){
                     $children[$idx] = $this->applyDefinitions($child, $node);
                 }
 
@@ -81,16 +68,15 @@ class PropertiesValidator implements IValidator  {
         }
 
         // Type is single
-        if($node->getType() == Properties::TYPE_SINGLE) {
+        if($node->getType() === Properties::TYPE_SINGLE) {
             return $this->applyDefinitions($values, $node);
         }
 
         // Type is invalid
-        $this->statusManager->addMessage(
+        $this->addStatusMessage(
             StatusManager::ERROR,
             "Invalid schema type",
-            $node->getType(),
-            $this->node
+            $node->getType()
         );
         return null;
     }
@@ -99,6 +85,7 @@ class PropertiesValidator implements IValidator  {
      * @param array $values
      * @param \Topolis\Validator\Schema\Node\Properties $node
      * @return array
+     * @throws \Exception
      */
     protected function applyDefinitions($values, $node){
         // Validate a value
@@ -107,11 +94,10 @@ class PropertiesValidator implements IValidator  {
         if(is_array($values)){
             $surpusKeys = array_keys(array_diff_key($values, $node->getProperties()));
             if($surpusKeys){
-                $this->statusManager->addMessage(
+                $this->addStatusMessage(
                     StatusManager::SANITIZED,
                     "Sanitized - Additional keys present (".implode(",",$surpusKeys).")",
-                    $values,
-                    $node
+                    $values
                 );
             }
         }
@@ -125,7 +111,7 @@ class PropertiesValidator implements IValidator  {
             try {
 
                 // Propery does not exist and no default specified
-                if(!is_array($values) || !array_key_exists($key,$values) && $subnode->getDefault() === null){
+                if(!\is_array($values) || (!array_key_exists($key,$values) && $subnode->getDefault() === null)){
                     if ($subnode->getRequired())
                         throw new ValidatorException("Invalid - Required property is missing");
                 }
@@ -159,7 +145,7 @@ class PropertiesValidator implements IValidator  {
 
             } catch (ValidatorException $e) {
                 // Error reporting
-                $this->statusManager->addMessage(
+                $this->addStatusMessage(
                     StatusManager::INVALID,
                     $e->getMessage(),
                     $value,

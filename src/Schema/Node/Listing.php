@@ -8,16 +8,8 @@ use Topolis\Validator\Schema\INode;
 use Topolis\Validator\Schema\NodeFactory;
 use Topolis\Validator\Schema\Validators\ListingValidator;
 
-class Listing implements INode {
+class Listing extends BaseNode implements INode {
 
-    /* @var NodeFactory $factory */
-    protected $factory;
-
-    /* @var Conditional[] $conditionals */
-    protected $conditionals = [];
-
-    protected $default;
-    protected $required;
     protected $min = false;
     protected $max = false;
 
@@ -26,18 +18,8 @@ class Listing implements INode {
     /* @var INode $value */
     protected $value;
 
-    /**
-     * Schema constructor.
-     * @param array $data
-     * @param NodeFactory $factory
-     */
-    public function __construct(array $data, NodeFactory $factory) {
-        $this->factory = $factory;
-        $this->import($data);
-    }
-
     public static function detect(array $schema) {
-        return is_array($schema) and isset($schema["listing"]);
+        return \is_array($schema) and isset($schema["listing"]);
     }
 
     public static function validator() {
@@ -50,6 +32,9 @@ class Listing implements INode {
      * @throws Exception
      */
     public function import(array $data){
+
+        // No use of parent method as source of data is different (see: $schema["listing"] below)
+
         $schema = array_replace_recursive([
             "listing" => [
                 "default" => null,
@@ -59,11 +44,15 @@ class Listing implements INode {
                 "key" => [],
                 "value" => [],
             ],
-            "conditionals" => []
+            "conditionals" => [],
+            "errors" => [],
         ], $data);
 
         $conditionals = $schema["conditionals"];
         unset($schema["conditionals"]);
+
+        $errors = $schema["errors"];
+        unset($schema["errors"]);
 
         $this->min = $schema["listing"]["min"];
         $this->max = $schema["listing"]["max"];
@@ -72,6 +61,10 @@ class Listing implements INode {
 
         foreach($conditionals as $conditional){
             $this->conditionals[] = new Conditional($conditional, $schema, $this->factory);
+        }
+
+        foreach($errors as $code => $config){
+            $this->errors[(int)$code] = $config;
         }
 
         $this->key = $this->factory->createNode($schema["listing"]["key"]);
@@ -85,7 +78,8 @@ class Listing implements INode {
      * @return array
      */
     public function export() {
-        $export = [
+        $export = parent::export();
+        $export += [
             "listing" => [
                 "default" => $this->getDefault(),
                 "required" => $this->getRequired(),
@@ -94,37 +88,12 @@ class Listing implements INode {
                 "key" => $this->getKey()->export(),
                 "value" => $this->getValue()->export()
             ],
-            "conditionals" => [],
         ];
-
-        foreach($this->conditionals as $conditional)
-            $export["conditionals"][] = $conditional->export();
 
         return $export;
     }
 
     // ----------------------------------------------------------------
-
-    /**
-     * @return Conditional[]
-     */
-    public function getConditionals(){
-        return $this->conditionals;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getDefault(){
-        return $this->default;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getRequired(){
-        return $this->required;
-    }
 
     /**
      * @return mixed
@@ -172,6 +141,7 @@ class Listing implements INode {
         // Conditionals (Cant be smartly merged as we dont have a key for them (Might be a CR?)
         $this->conditionals = array_merge($this->conditionals, $schema->getConditionals());
 
+        $this->errors += $schema->getErrors();
     }
 
 }

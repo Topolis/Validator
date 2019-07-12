@@ -14,25 +14,17 @@ use Topolis\Validator\Schema\NodeFactory;
 use Topolis\Validator\StatusManager;
 use Topolis\Validator\ValidatorException;
 
-class ValueValidator implements IValidator {
-
-    /* @var Value $node */
-    protected $node;
-    protected $statusManager;
-
-    public function __construct(INode $node, StatusManager $statusManager, NodeFactory $factory) {
-        $this->statusManager = $statusManager;
-        $this->node = $node;
-    }
+class ValueValidator extends BaseValidator implements IValidator {
 
     /**
      * @param $value
      * @param $data
      * @return mixed
-     * @throws ValidatorException
+     * @throws \Exception
      */
     public function validate($value, $data = null){
 
+        /* @var Value $node */
         $node = $this->node;
 
         // Apply conditionals
@@ -52,13 +44,13 @@ class ValueValidator implements IValidator {
 
         // Result invalid
         if($value === false && $original !== false){
-            $this->statusManager->addMessage(StatusManager::INVALID, "Invalid - Invalid value found", $original, $this->node);
+            $this->addStatusMessage(StatusManager::INVALID, "Invalid - Invalid value found", $original);
             return null;
         }
 
         // Result sanitized
         if($value != $original){
-            $this->statusManager->addMessage(StatusManager::SANITIZED, "Sanitized - value was sanitized", $original, $this->node);
+            $this->addStatusMessage(StatusManager::SANITIZED, "Sanitized - value was sanitized", $original);
         }
 
         return $value;
