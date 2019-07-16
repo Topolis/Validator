@@ -16,6 +16,7 @@ The Yaml representation of an object construct is:
 - `filter` If type is `multiple`, this filter will be usedto validate the array keys. Default: `undefined`
 - `options` If type is `multiple`, these are the options for the key filter. Default: `[]`
 - `properties` The array of properties of this object. Default: `[]`
+- `errors` individual status codes can be overriden with custom codes and messages for this one validation rule. Default: `[]` (See below=
 
 #### Sample
 ```
@@ -72,6 +73,32 @@ options: {characters: ".-_"}
 required: true
 default: Pustekuchen
         
+```
+
+## Custom Errors
+FOr each validation rule, a custom error can bespecified for individual status codes. Be carefull with custom codes though as there are certain rules expected from your validation results.
+
+- `Positive/Negative` following typical process exit codes, any positive code is considered a success. Any negative code is considered a failure
+- `Severity` The more negative a number is, the more dramatic is the error. Most calling programms expect correct values for invalid or sanitized results. Be carefull to not break your result code checks.
+
+### Default error codes
+- `ERROR = -100` A critical execution or configuration error
+- `INVALID = -11` The result did not pass the minimal required rules
+- `SANITIZED = -2` The result has non-critical problems. The values causeing these problems could be adjusted automatically
+- `INFO = -1` The result is completely valid but there are informational messages
+- `VALID = 1` The result is completely valid
+
+#### Sample
+```
+filter: PlainExt
+options: {characters: ".-_"}
+errors: 
+    -2:
+        code: -1
+        message: This data could be sanitized but we think a info alone is enough
+    -11:
+        code: -192
+        message: This very special check failed      
 ```
 
 ## Open Tasks
