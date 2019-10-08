@@ -10,14 +10,17 @@
 
 namespace Topolis\Validator;
 
-use Symfony\Component\Yaml\Yaml;
 use Exception;
+use Topolis\Validator\Schema\Conditional;
 use Topolis\Validator\Schema\INode;
 use Topolis\Validator\Schema\IValidator;
 use Topolis\Validator\Schema\Node\Listing;
 use Topolis\Validator\Schema\Node\Properties;
 use Topolis\Validator\Schema\Node\Value;
 use Topolis\Validator\Schema\NodeFactory;
+use Topolis\Validator\Schema\Validators\ListingValidator;
+use Topolis\Validator\Schema\Validators\PropertiesValidator;
+use Topolis\Validator\Schema\Validators\ValueValidator;
 
 /**
  * Validator
@@ -34,14 +37,28 @@ class Validator {
     protected $validator;
     /* @var StatusManager $errorhandler */
     protected $errorhandler;
+    /* @var callable $parser */
+    protected $parser;
+    /* @var callable $defaultParser */
+    protected static $defaultParser;
 
     /**
-     * @param $definitionfile
+     * @param string|boolean $definitionfile
      * @param string|boolean $cachefolder folder path to cache folder
+     * @throws Exception
      */
-    public function __construct($definitionfile, $cachefolder = false){
+    public function __construct($definitionfile = false, $cachefolder = false){
+        // For old legacy usage, the constructor can also directly trigger schema loading
+        if($definitionfile)
+            $this->loadSchema($definitionfile, $cachefolder);
+    }
 
-        $this->errorhandler = new StatusManager();
+    // Schema loading and initialization -------------------------------------------------------------------------------
+
+    /**
+     * @throws Exception
+     */
+    public function loadSchema($definitionfile, $cachefolder = false){
 
         $cachefile = $cachefolder ? $cachefolder."/".pathinfo($definitionfile, PATHINFO_FILENAME).".schema-cache" : false;
 
@@ -51,6 +68,7 @@ class Validator {
             $cached = $this->getCached($cachefile, $definitionfile);
 
             if($cached) {
+                $this->errorhandler = $cached["errorhandler"];
                 $this->schema    = $cached["schema"];
                 $this->validator = $cached["validator"];
 
@@ -60,28 +78,60 @@ class Validator {
 
         if(!$initCompleted) {
 
+            $this->initParser();
             $definition = $this->getYaml($definitionfile);
 
-            $this->factory = new NodeFactory();
-            $this->factory->registerClass(Listing::class);
-            $this->factory->registerClass(Properties::class);
-            $this->factory->registerClass(Value::class);
+            $factory = new NodeFactory();
+            $factory->registerClass(Listing::class);
+            $factory->registerClass(Properties::class);
+            $factory->registerClass(Value::class);
 
-            $this->schema = $this->factory->createNode($definition);
-            $this->validator = $this->factory->createValidator($this->schema, $this->errorhandler);
+            $this->errorhandler = new StatusManager();
+            $this->schema = $factory->createNode($definition);
+            $this->validator = $factory->createValidator($this->schema, $this->errorhandler);
 
             $initCompleted = true;
         }
 
-         if($cachefile && $initCompleted) {
+        if($cachefile && $initCompleted) {
             $this->setCached($cachefile, [
+                "errorhandler" => $this->errorhandler,
                 "schema"    => $this->schema,
-                "validator" => $this->validator
+                "validator" => $this->validator,
             ]);
         }
     }
 
-    // ------------------------------------------------------------------------------------------------------
+    // Parser Initialization -------------------------------------------------------------------------------------------
+
+    /**
+     * @param $parser
+     * @throws Exception
+     */
+    public static function setDefaultParser(callable $parser){
+        self::$defaultParser = $parser;
+    }
+
+    public function setParser(callable $parser){
+        $this->parser = $parser;
+    }
+
+    protected function initParser(){
+        if(!$this->parser)
+            $this->parser = self::$defaultParser;
+
+        if(!$this->parser)
+            $this->parser = [$this, 'defaultParser'];
+    }
+
+    protected function defaultParser($input){
+        if(is_array($input))
+            return $input;
+
+        return \Symfony\Component\Yaml\Yaml::parseFile($input);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
 
     /**
      * Validate $array of values according to field definitions
@@ -92,6 +142,9 @@ class Validator {
      */
     public function validate(array $values, $quiet = false){
 
+        if(!$this->validator)
+            throw new Exception('No schema has been loaded');
+
         $this->errorhandler->reset();
 
         $valid = $this->validator->validate($values);
@@ -99,7 +152,7 @@ class Validator {
 
         if($status <= StatusManager::INVALID){
             if(!$quiet)
-                throw new Exception("Values for object invalid");
+                throw new Exception('Values for object invalid');
             else
                 return false;
         }
@@ -133,7 +186,18 @@ class Validator {
 
         // Cache is ok
         $definition = file_get_contents($cachefile);
-        return unserialize($definition);
+        $result =  unserialize($definition, ['allowed_classes' => [
+            Listing::class,
+            Properties::class,
+            Value::class,
+            ListingValidator::class,
+            PropertiesValidator::class,
+            ValueValidator::class,
+            Conditional::class,
+            NodeFactory::class,
+            StatusManager::class,
+        ]]);
+        return $result;
     }
 
     protected function setCached($cachefile, $definition){
@@ -142,8 +206,6 @@ class Validator {
     }
 
     protected function getYaml($schemafile){
-        $content = file_get_contents($schemafile);
-        $parsed = Yaml::parse($content);
-        return $parsed;
+        return \call_user_func($this->parser, $schemafile);
     }
 }
